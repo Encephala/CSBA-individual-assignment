@@ -3,6 +3,13 @@
 Simple class to make working with items a bit easier
 """
 
+from __future__ import annotations
+from scipy.sparse import lil_matrix
+
+# Jaccard score of the sets c1 and c2
+def jaccard(c1, c2):
+    return len(c1.intersection(c2)) / len(c1.union(c2))
+
 
 class Item():
     def __init__(self, id, features, all_features, shop, title):
@@ -55,4 +62,21 @@ class Item():
 
 
 
+    def minhash(products: list[Item]):
+        shingles = [product.shingled_data for product in products]
 
+        all_shingles = set()
+        for shingle in shingles:
+            all_shingles.update(shingle)
+
+        result = lil_matrix((len(all_shingles), len(products)))
+
+        for i, feature in enumerate(all_shingles):
+            for j, shingle in enumerate(shingles):
+                pass
+
+
+
+
+if __name__ == "__main__":
+    print(jaccard(set([1, 2, 3]), set([2, 3, 4])))

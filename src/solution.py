@@ -64,5 +64,10 @@ for product in products:
     product.shingle(shingle_size)
 
 
+# Minhash
+
+
+
+# Locality-sensitive hashing
 
 
