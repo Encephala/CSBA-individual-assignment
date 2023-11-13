@@ -11,7 +11,7 @@ with open(filename, "r") as file:
 
 
 # Find all feature keys that are in the data
-all_features = set()
+all_features = {}
 
 
 def remove_trailing_semicolon(string):
@@ -26,9 +26,22 @@ for key, val in data.items():
         current_features = product["featuresMap"]
 
         for key in current_features.keys():
-            all_features.add(remove_trailing_semicolon(key))
+            key = remove_trailing_semicolon(key)
 
-print(f"Number of unique features: {len(all_features)}")
+            if key not in all_features:
+                all_features[key] = 1
+
+            else:
+                all_features[key] += 1
+
+
+# Explore what the feature landscape is like
+# print(f"Number of unique features: {len(all_features)}")
+# print(list(filter(lambda i: i[-1] > 250, all_features.items())))
+
+# Make a set out of the features (dropping info on occurrences)
+all_features = all_features.keys()
+
 
 
 # Get all item instances into big array
@@ -45,3 +58,11 @@ for key, val in data.items():
 
 
 # Do shingling
+shingle_size = 10
+
+for product in products:
+    product.shingle(shingle_size)
+
+
+
+
