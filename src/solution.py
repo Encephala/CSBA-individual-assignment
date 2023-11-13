@@ -28,6 +28,8 @@ for key, val in data.items():
         for key in current_features.keys():
             all_features.add(remove_trailing_semicolon(key))
 
+print(f"Number of unique features: {len(all_features)}")
+
 
 # Get all item instances into big array
 products = []
@@ -36,8 +38,10 @@ for key, val in data.items():
     for product in val:
         id = product["modelID"]
         features = product["featuresMap"]
+        shop = product["shop"]
+        title = product["title"]
 
-        products.append(Item(id, features, all_features))
+        products.append(Item(id, features, all_features, shop, title))
 
 
 # Do shingling
