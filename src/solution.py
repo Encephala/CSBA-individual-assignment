@@ -35,10 +35,6 @@ for key, val in data.items():
                 all_features[key] += 1
 
 
-# Explore what the feature landscape is like
-# print(f"Number of unique features: {len(all_features)}")
-# print(list(filter(lambda i: i[-1] > 250, all_features.items())))
-
 # Make a set out of the features (dropping info on occurrences)
 all_features = all_features.keys()
 
@@ -72,8 +68,6 @@ signatures = Item.binary_to_signatures(binary_data, num_hashes)
 
 
 # Locality-sensitive hashing
-similarity_threshold = 0.8
-
 num_bands = 20
 num_rows = num_hashes // num_bands
 assert num_bands * num_rows == num_hashes
@@ -86,6 +80,8 @@ buckets = [[] for i in range(num_buckets)]
 for product in products:
     buckets[hash(product) % num_buckets].append(product)
 
+
+# Getting some idea of performance
 for bucket in buckets:
     if len(bucket) > 1:
         print(f"{len(bucket)} items in bucket:")
