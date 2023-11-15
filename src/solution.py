@@ -72,5 +72,24 @@ signatures = Item.binary_to_signatures(binary_data, num_hashes)
 
 
 # Locality-sensitive hashing
+similarity_threshold = 0.8
 
+num_bands = 20
+num_rows = num_hashes // num_bands
+assert num_bands * num_rows == num_hashes
 
+# A prime significantly larger than the number of products
+num_buckets = 6337
+
+buckets = [[] for i in range(num_buckets)]
+
+for product in products:
+    buckets[hash(product) % num_buckets].append(product)
+
+for bucket in buckets:
+    if len(bucket) > 1:
+        print(f"{len(bucket)} items in bucket:")
+        for item in bucket:
+            print(item.title)
+            print(item.id)
+        print()

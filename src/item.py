@@ -40,6 +40,12 @@ class Item():
     def __repr__(self):
         return self.__str__()
 
+    def __hash__(self):
+        return hash(self.__str__())
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
 
     def make_shingle_string(self):
         return self.title.replace(" ", "")
@@ -89,6 +95,8 @@ class Item():
                 # nonzero() already filters zero values in the algorithm
                 value = binary_data[row, col]
                 result[i, col] = min(custom_hash(value, a, b), result[i, col])
+
+        print("Done calculating signatures")
 
         return result
 
