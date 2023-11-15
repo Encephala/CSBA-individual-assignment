@@ -58,14 +58,17 @@ for key, val in data.items():
 
 
 # Do shingling
-shingle_size = 10
+shingle_size = 5
 
 for product in products:
     product.shingle(shingle_size)
 
 
 # Minhash
+binary_data = Item.minhash(products)
 
+num_hashes = 100
+signatures = Item.binary_to_signatures(binary_data, num_hashes)
 
 
 # Locality-sensitive hashing
