@@ -13,7 +13,7 @@ from random import randint
 def jaccard(c1, c2):
     return len(c1.intersection(c2)) / len(c1.union(c2))
 
-def hash(x, a, b):
+def custom_hash(x, a, b):
     # Realistically, shingle size is not going to be much larger than 10,
     # so we can afford to pick some static prime here
     p = 379
@@ -55,6 +55,7 @@ class Item():
 
 
 
+    # Class methods below here
     def minhash(products: list[Item]):
         shingles = [product.shingled_data for product in products]
 
@@ -87,7 +88,7 @@ class Item():
 
                 # nonzero() already filters zero values in the algorithm
                 value = binary_data[row, col]
-                result[i, col] = min(hash(value, a, b), result[i, col])
+                result[i, col] = min(custom_hash(value, a, b), result[i, col])
 
         return result
 
