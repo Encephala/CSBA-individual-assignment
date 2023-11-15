@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import json
 
+from itertools import combinations
+
 from item import Item
 
 # Load in data
@@ -82,10 +84,27 @@ for product in products:
 
 
 # Getting some idea of performance
+FP = FN = TP = TN = 0
+
+# Find true and false positives
 for bucket in buckets:
     if len(bucket) > 1:
-        print(f"{len(bucket)} items in bucket:")
-        for item in bucket:
-            print(item.title)
-            print(item.id)
-        print()
+        for item, other_item in combinations(bucket, 2):
+            i += 1
+            if item.id == other_item.id:
+                TP += 1
+            else:
+                FP += 1
+
+print(f"TP: {TP}")
+print(f"FP: {FP}")
+
+
+num_duplicates = 0
+for model, occurrences in data.items():
+    length = len(occurrences)
+    if length > 1:
+        num_duplicates += length * (length - 1) / 2
+
+
+print(f"Out of: {num_duplicates} duplicates")
