@@ -14,5 +14,5 @@ I did this assignment individually.
 - Tune some of the parameters (shingle size, n, b/r)
 
 ## Questions:
-
+- So about 50% F1-score and 4% F1*-score after MSM, but any indication what the scores were before MSM?
 

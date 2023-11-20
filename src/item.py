@@ -22,7 +22,7 @@ def custom_hash(x, a, b):
 
 
 class Item():
-    def __init__(self, id, features, all_features, shop, title):
+    def __init__(self, id, features, shop, title):
         self.id = id
 
         self.shop = shop
@@ -30,10 +30,7 @@ class Item():
 
         self.signature = None
 
-        self.features = {}
-
-        for feature in all_features:
-            self.features[feature] = features.get(feature, None)
+        self.features = features
 
 
     def __str__(self) -> str:
