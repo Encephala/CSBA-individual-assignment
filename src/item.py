@@ -107,23 +107,24 @@ class Signature():
     def __init__(self, signature: np.ndarray):
         self.value = signature
 
-        self.hash = None
+        self.hashed = None
 
-    def __hash__(self):
-        if self.hash is not None:
-            return self.hash
+    def hash(self, num_bands, num_rows) -> list:
+        if self.hashed is not None:
+            return self.hashed
 
         else:
-            self.hash = sum([hash(i) for i in self.value])
-            return self.hash
+            self.hashed = []
+
+            for i in range(num_bands):
+                band = self.value[i * num_rows:(i + 1) * num_rows]
+                self.hashed.append(sum([hash(i) for i in band]))
+
+            return self.hashed
 
     def __str__(self) -> str:
-        return f"Signature: {hash(self)}..."
+        return f"Signature: {str(self.value):.10s}..."
 
     def __repr__(self) -> str:
         return self.__str__()
 
-
-
-if __name__ == "__main__":
-    print(jaccard(set([1, 2, 3]), set([2, 3, 4])))

@@ -65,7 +65,7 @@ for product in products:
 # Minhash
 binary_data = Item.minhash(products)
 
-num_hashes = 200
+num_hashes = 100
 signatures = Item.binary_to_signatures(binary_data, num_hashes)
 
 for i, signature in enumerate(signatures.T):
@@ -73,7 +73,7 @@ for i, signature in enumerate(signatures.T):
 
 
 # Locality-sensitive hashing
-num_bands = 100
+num_bands = 20
 num_rows = num_hashes // num_bands
 assert num_bands * num_rows == num_hashes
 
@@ -83,7 +83,9 @@ num_buckets = 6337
 buckets = [[] for i in range(num_buckets)]
 
 for product in products:
-    buckets[hash(product.signature) % num_buckets].append(product)
+    hashes = product.signature.hash(num_bands, num_rows)
+    for hash in hashes:
+        buckets[hash % num_buckets].append(product)
 
 
 
