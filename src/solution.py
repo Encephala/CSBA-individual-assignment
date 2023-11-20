@@ -3,7 +3,7 @@ import json
 
 from itertools import combinations
 
-from item import Item
+from item import Item, Signature
 
 # Load in data
 filename = "data/TVs-all-merged.json"
@@ -65,12 +65,15 @@ for product in products:
 # Minhash
 binary_data = Item.minhash(products)
 
-num_hashes = 100
+num_hashes = 200
 signatures = Item.binary_to_signatures(binary_data, num_hashes)
+
+for i, signature in enumerate(signatures.T):
+    products[i].signature = Signature(signature)
 
 
 # Locality-sensitive hashing
-num_bands = 20
+num_bands = 100
 num_rows = num_hashes // num_bands
 assert num_bands * num_rows == num_hashes
 
@@ -80,7 +83,8 @@ num_buckets = 6337
 buckets = [[] for i in range(num_buckets)]
 
 for product in products:
-    buckets[hash(product) % num_buckets].append(product)
+    buckets[hash(product.signature) % num_buckets].append(product)
+
 
 
 # Getting some idea of performance

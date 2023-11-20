@@ -28,30 +28,32 @@ class Item():
         self.shop = shop
         self.title = title
 
+        self.signature = None
+
         self.features = {}
 
         for feature in all_features:
             self.features[feature] = features.get(feature, None)
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Item: '{self.id}'"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     def __hash__(self):
-        return hash(self.__str__())
+        return hash(self.signature)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return hash(self) == hash(other)
 
 
-    def make_shingle_string(self):
+    def make_shingle_string(self) -> str:
         return self.title.replace(" ", "")
 
 
-    def shingle(self, shingle_size: int):
+    def shingle(self, shingle_size: int) -> None:
         string = self.make_shingle_string()
 
         self.shingled_data = set()
@@ -62,7 +64,7 @@ class Item():
 
 
     # Class methods below here
-    def minhash(products: list[Item]):
+    def minhash(products: list[Item]) -> lil_matrix:
         shingles = [product.shingled_data for product in products]
 
         all_shingles = set()
@@ -80,7 +82,7 @@ class Item():
         return result
 
 
-    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int):
+    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int) -> np.ndarray:
         result = np.full([num_hashes, binary_data.shape[1]], float("inf"))
 
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix
@@ -100,6 +102,26 @@ class Item():
 
         return result
 
+
+class Signature():
+    def __init__(self, signature: np.ndarray):
+        self.value = signature
+
+        self.hash = None
+
+    def __hash__(self):
+        if self.hash is not None:
+            return self.hash
+
+        else:
+            self.hash = sum([hash(i) for i in self.value])
+            return self.hash
+
+    def __str__(self) -> str:
+        return f"Signature: {hash(self)}..."
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 
