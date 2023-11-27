@@ -10,6 +10,7 @@ I did this assignment individually.
 
 ## ToDo
 - Implement performance evaluation
+- Implement hard blocks for not being equal if in same shop, etc.
 - Better item representation than (shingles of) title
 - Tune some of the parameters (shingle size, n)
 
