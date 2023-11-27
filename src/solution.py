@@ -15,10 +15,12 @@ from item import Item, Signature
 # Parameters
 shingle_size = 5
 
-num_hashes = 150
-num_bands = 50
+num_hashes = 300
+num_bands = 100
 num_rows = num_hashes // num_bands
 assert num_bands * num_rows == num_hashes
+
+print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
 
 filename = "data/TVs-all-merged.json"
 
@@ -124,18 +126,24 @@ recall_star = TPstar / (TPstar + FNstar)
 
 F1 = 2 * precision_star * recall_star / (precision_star + recall_star)
 
-print(f"F1*: {F1:.1%}")
+print(f"F1*: {F1:.2%}")
 
 
 # Robust duplicate detection
 print("Detecting duplicates")
 
+def similarity_score(pair: tuple[item]):
+    if item.shop == other_item.shop:
+        return 0
+
+    return jellyfish.jaro_winkler_similarity(pair[0].title, pair[1].title)
+
+
 final_duplicates = set()
 for i, pair in enumerate(intermediate_duplicates):
     print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
 
-    # similarity = jellyfish.jaro_winkler_similarity(pair[0].title, pair[1].title)
-    similarity = SequenceMatcher(None, pair[0].title, pair[1].title).ratio()
+    similarity = similarity_score(pair)
     if similarity > 0.7:
         final_duplicates.add(pair)
 
@@ -172,4 +180,4 @@ recall = TP / (TP + FN)
 
 F1 = 2 * precision * recall / (precision + recall)
 
-print(f"F1: {F1:.1%}")
+print(f"F1: {F1:.2%}")

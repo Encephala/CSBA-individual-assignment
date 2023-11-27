@@ -11,6 +11,7 @@ I did this assignment individually.
 ## ToDo
 - Implement hard blocks for not being equal if in same shop, etc.
 - Better item representation than (shingles of) title
+    - (try to) Find brand of product
 - Tune some of the parameters (shingle size, n)
 
 ## Questions:
