@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Simple class to make working with items a bit easier
-"""
-
 from __future__ import annotations
 import numpy as np
 
@@ -22,13 +18,17 @@ def custom_hash(x, a, b):
 
 
 class Item():
-    def __init__(self, model_id, features, shop, title):
+    """
+    Simple class to make working with items a bit easier
+    """
+
+    def __init__(self, model_id: str, features: dict[str, list[str]], shop: str, title: str):
         self.id = model_id
 
         self.shop = shop
         self.title = title
 
-        self.signature = None
+        self.signature: Signature = None
 
         self.features = features
 
@@ -39,14 +39,11 @@ class Item():
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.title + self.id)
 
     def __eq__(self, other) -> bool:
         return self.id == other.id
-
-    def __iter__(self):
-        yield self.make_shingle_string()
 
 
     def make_shingle_string(self) -> str:
@@ -105,10 +102,10 @@ class Signature():
     def __init__(self, signature: np.ndarray):
         self.value = signature
 
-        self.hashed = None
+        self.hashed: list[int] = None
 
     # Hash of each band of the signature
-    def hash(self, num_bands, num_rows) -> list:
+    def hash(self, num_bands, num_rows) -> list[int]:
         if self.hashed is not None:
             return self.hashed
 

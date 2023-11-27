@@ -52,15 +52,13 @@ for key, val in data.items():
 
 
 # Get set of all duplicates
-# There has to be a better way but this works
-all_duplicates = set()
+all_duplicates: set[tuple[Item]] = set()
 for items in duplicates.values():
     for item, other_item in combinations(items, 2):
         all_duplicates.add((item, other_item))
 
 num_duplicates = len(all_duplicates)
 print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}")
-print(all_duplicates, file = open("all_duplicates", "w"))
 
 
 # Do shingling
@@ -92,10 +90,10 @@ for product in products:
 
 
 # F1*-score
-FP = FN = TP = TN = 0
+FPstar = FNstar = TPstar = TNstar = 0
 
 # Aggregate buckets for FN checking
-intermediate_duplicates = set()
+intermediate_duplicates: set[tuple[Item]] = set()
 for _, bucket in buckets.items():
     for item, other_item in combinations(bucket, 2):
         intermediate_duplicates.add((item, other_item))
@@ -103,34 +101,34 @@ for _, bucket in buckets.items():
 # Find FP and TP
 for pair in intermediate_duplicates:
     if pair in all_duplicates:
-        TP += 1
+        TPstar += 1
     else:
-        FP += 1
+        FPstar += 1
 
 # Find FN
 for pair in all_duplicates:
     if pair not in intermediate_duplicates:
-        FN += 1
-
+        FNstar += 1
 
 # Find TN
-TN = comb(len(products), 2) - FN - FP - TP
+TNstar = comb(len(products), 2) - FNstar - FPstar - TPstar
 
-print(f"TP: {TP}")
-print(f"FP: {FP}")
-print(f"TN: {TN}")
-print(f"FN: {FN}")
 
-precision = TP / (TP + FP)
-recall = TP / (TP + FN)
+print(f"TP*: {TPstar}")
+print(f"FP*: {FPstar}")
+print(f"TN*: {TNstar}")
+print(f"FN*: {FNstar}")
 
-F1 = 2 * precision * recall / (precision + recall)
+precision_star = TPstar / (TPstar + FPstar)
+recall_star = TPstar / (TPstar + FNstar)
+
+F1 = 2 * precision_star * recall_star / (precision_star + recall_star)
 
 print(f"F1*: {F1:.1%}")
 
 
 # Robust duplicate detection
-print("Doing robust duplicate detection")
+print("Detecting duplicates")
 
 final_duplicates = set()
 for i, pair in enumerate(intermediate_duplicates):
@@ -144,7 +142,6 @@ for i, pair in enumerate(intermediate_duplicates):
 
 print("Done checking duplicates")
 
-print(final_duplicates, file = open("final_duplicates", "w"))
 
 # F1-score
 FP = FN = TP = TN = 0
