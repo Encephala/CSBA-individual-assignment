@@ -39,10 +39,8 @@ class Item():
     def __repr__(self) -> str:
         return self.__str__()
 
-    # This dunder hash method is not consistent with the dunder eq method
-    # But ah well
     def __hash__(self):
-        return hash(self.signature)
+        return hash(self.title + self.id)
 
     def __eq__(self, other) -> bool:
         return self.id == other.id
