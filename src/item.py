@@ -22,8 +22,8 @@ def custom_hash(x, a, b):
 
 
 class Item():
-    def __init__(self, id, features, shop, title):
-        self.id = id
+    def __init__(self, model_id, features, shop, title):
+        self.id = model_id
 
         self.shop = shop
         self.title = title
@@ -111,6 +111,7 @@ class Signature():
 
         self.hashed = None
 
+    # Hash of each band of the signature
     def hash(self, num_bands, num_rows) -> list:
         if self.hashed is not None:
             return self.hashed
