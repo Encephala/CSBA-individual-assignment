@@ -31,7 +31,9 @@ with open(filename, "r") as file:
 # Get all item instances into big array
 products = []
 
+# Dict which contains duplicate items
 duplicates = {}
+
 for key, val in data.items():
     for product in val:
         model_id = product["modelID"]
@@ -49,6 +51,18 @@ for key, val in data.items():
             duplicates[model_id].append(product_as_item)
 
 
+# Get set of all duplicates
+# There has to be a better way but this works
+all_duplicates = set()
+for items in duplicates.values():
+    for item, other_item in combinations(items, 2):
+        all_duplicates.add((item, other_item))
+
+num_duplicates = len(all_duplicates)
+print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}")
+print(all_duplicates, file = open("all_duplicates", "w"))
+
+
 # Do shingling
 for product in products:
     product.shingle(shingle_size)
@@ -57,7 +71,9 @@ for product in products:
 # Minhash
 binary_data = Item.minhash(products)
 
+print("Calculating signatures")
 signatures = Item.binary_to_signatures(binary_data, num_hashes)
+print("Done calculating signatures")
 
 for i, signature in enumerate(signatures.T):
     products[i].signature = Signature(signature)
@@ -78,33 +94,20 @@ for product in products:
 # F1*-score
 FP = FN = TP = TN = 0
 
-# Find FP and TP
-for _, bucket in buckets.items():
-    if len(bucket) > 1:
-        for product, other_item in combinations(bucket, 2):
-            i += 1
-            if product.id == other_item.id:
-                TP += 1
-            else:
-                FP += 1
-
-# Find FN
-# Get set of all duplicates
-# There has to be a better way but this works
-all_duplicates = set()
-for model_id, items in duplicates.items():
-    for item, other_item in combinations(items, 2):
-        all_duplicates.add((item, other_item))
-
-num_duplicates = len(all_duplicates) # 399 of them
-
-# Concatenate buckets for FN checking
+# Aggregate buckets for FN checking
 intermediate_duplicates = set()
 for _, bucket in buckets.items():
-    for product, other_item in combinations(bucket, 2):
-        intermediate_duplicates.add((product, other_item))
+    for item, other_item in combinations(bucket, 2):
+        intermediate_duplicates.add((item, other_item))
 
+# Find FP and TP
+for pair in intermediate_duplicates:
+    if pair in all_duplicates:
+        TP += 1
+    else:
+        FP += 1
 
+# Find FN
 for pair in all_duplicates:
     if pair not in intermediate_duplicates:
         FN += 1
@@ -123,31 +126,32 @@ recall = TP / (TP + FN)
 
 F1 = 2 * precision * recall / (precision + recall)
 
-print(F1)
 print(f"F1*: {F1:.1%}")
 
 
 # Robust duplicate detection
+print("Doing robust duplicate detection")
+
 final_duplicates = set()
-for i, bucket in enumerate(buckets.values()):
-    print(f"{i} ({i / len(buckets):.1%})", end = "\r")
-    if len(bucket) > 1:
-        for product, other_item in combinations(bucket, 2):
-            duplicate = jellyfish.jaro_winkler_similarity(product.title, other_item.title)
-            # duplicate = SequenceMatcher(None, item.make_shingle_string(), other_item.make_shingle_string()).ratio()
-            if duplicate > 0.9:
-                final_duplicates.add((product, other_item))
+for i, pair in enumerate(intermediate_duplicates):
+    print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
+
+    # similarity = jellyfish.jaro_winkler_similarity(pair[0].title, pair[1].title)
+    similarity = SequenceMatcher(None, pair[0].title, pair[1].title).ratio()
+    if similarity > 0.7:
+        final_duplicates.add(pair)
+
 
 print("Done checking duplicates")
 
-
+print(final_duplicates, file = open("final_duplicates", "w"))
 
 # F1-score
 FP = FN = TP = TN = 0
 
 # Find TP and FP
-for product, other_item in final_duplicates:
-    if product.id == other_item.id:
+for pair in final_duplicates:
+    if pair in all_duplicates:
         TP += 1
     else:
         FP += 1
@@ -171,4 +175,4 @@ recall = TP / (TP + FN)
 
 F1 = 2 * precision * recall / (precision + recall)
 
-print(f"F1*: {F1:.1%}")
+print(f"F1: {F1:.1%}")

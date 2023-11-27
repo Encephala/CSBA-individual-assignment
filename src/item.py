@@ -98,8 +98,6 @@ class Item():
                 value = binary_data[row, col]
                 result[i, col] = min(custom_hash(value, a, b), result[i, col])
 
-        print("Done calculating signatures")
-
         return result
 
 
