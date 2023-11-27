@@ -9,10 +9,10 @@ so as to reduce the cost of the subsequent duplicate detection through the multi
 I did this assignment individually.
 
 ## ToDo
-- Implement duplicate checking given the candidates
 - Implement performance evaluation
-- Tune some of the parameters (shingle size, n, b/r)
+- Better item representation than (shingles of) title
+- Tune some of the parameters (shingle size, n)
 
 ## Questions:
-- So about 50% F1-score and 4% F1*-score after MSM, but any indication what the scores were before MSM?
+-
 

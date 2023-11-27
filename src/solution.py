@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 import json
 
+import jellyfish
+
 from itertools import combinations
+from difflib import SequenceMatcher
+from collections import defaultdict
 
 from item import Item, Signature
 
@@ -50,9 +54,9 @@ for i, signature in enumerate(signatures.T):
 # Locality-sensitive hashing
 
 # A prime significantly larger than the number of products
-num_buckets = 6337
+num_buckets = 15485863
 
-buckets = [[] for i in range(num_buckets)]
+buckets: dict[int, list[Item]] = defaultdict(list)
 
 for product in products:
     hashes = product.signature.hash(num_bands, num_rows)
@@ -61,11 +65,11 @@ for product in products:
 
 
 
-# Getting some idea of performance
+# F1*-score
 FP = FN = TP = TN = 0
 
 # Find true and false positives
-for bucket in buckets:
+for _, bucket in buckets.items():
     if len(bucket) > 1:
         for item, other_item in combinations(bucket, 2):
             i += 1
@@ -85,4 +89,45 @@ for model, occurrences in data.items():
         num_duplicates += length * (length - 1) / 2
 
 
-print(f"Out of: {num_duplicates} duplicates")
+print(f"Out of: {num_duplicates} duplicates and {len(products) ** 2 / 2:.0f} possible duplicates ({num_duplicates / (len(products) ** 2 / 2):.1%})")
+
+
+duplicates = set()
+# Robust duplicate detection
+for i, (_, bucket) in enumerate(buckets.items()):
+    print(f"{i} ({i / len(buckets):.1%})", end = "\r")
+    if len(bucket) > 1:
+        for item, other_item in combinations(bucket, 2):
+            duplicate = jellyfish.jaro_winkler_similarity(item.title, other_item.title)
+            # duplicate = SequenceMatcher(None, item.make_shingle_string(), other_item.make_shingle_string()).ratio()
+            if duplicate > 0.9:
+                duplicates.add((item, other_item))
+
+print("Done checking duplicates")
+
+# Write duplicates to file for inspection
+print(*duplicates, sep = "\n", file = open("/tmp/duplicates.txt", "w"))
+
+
+# F1-score
+FP = FN = TP = TN = 0
+
+# Find true and false positives
+for item, other_item in duplicates:
+    if item.id == other_item.id:
+        TP += 1
+    else:
+        FP += 1
+
+print(f"TP: {TP}")
+print(f"FP: {FP}")
+
+
+num_duplicates = 0
+for model, occurrences in data.items():
+    length = len(occurrences)
+    if length > 1:
+        num_duplicates += length * (length - 1) / 2
+
+
+print(f"Out of: {len(duplicates)} duplicates and {len(products) ** 2 / 2:.0f} possible duplicates ({len(duplicates) / (len(products) ** 2 / 2):.1%})")

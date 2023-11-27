@@ -45,6 +45,9 @@ class Item():
     def __eq__(self, other) -> bool:
         return hash(self) == hash(other)
 
+    def __iter__(self):
+        yield self.make_shingle_string()
+
 
     def make_shingle_string(self) -> str:
         return self.title.replace(" ", "")
