@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+#%%
 # Imports
 import json
 
@@ -24,12 +26,15 @@ print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_row
 
 filename = "data/TVs-all-merged.json"
 
-
 # Load in data
-with open(filename, "r") as file:
-    data = json.load(file)
+try:
+    with open(filename, "r") as file:
+        data = json.load(file)
+except FileNotFoundError:
+    with open(f"../{filename}", "r") as file:
+        data = json.load(file)
 
-
+#%%
 # Get all item instances into big array
 products = []
 
@@ -63,11 +68,13 @@ num_duplicates = len(all_duplicates)
 print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}")
 
 
+#%%
 # Do shingling
 for product in products:
     product.shingle(shingle_size)
 
 
+#%%
 # Minhash
 binary_data = Item.minhash(products)
 
@@ -79,6 +86,7 @@ for i, signature in enumerate(signatures.T):
     products[i].signature = Signature(signature)
 
 
+#%%
 # Locality-sensitive hashing
 # A prime significantly larger than the number of products
 num_buckets = 15485863
@@ -129,6 +137,7 @@ F1 = 2 * precision_star * recall_star / (precision_star + recall_star)
 print(f"F1*: {F1:.2%}")
 
 
+#%%
 # Robust duplicate detection
 print("Detecting duplicates")
 
