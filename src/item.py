@@ -87,13 +87,13 @@ class Item():
         length = len(list(zip(rows, cols)))
         for i, (row, col) in enumerate(zip(rows, cols)):
             print(f"{i} ({i / length:.1%})", end = "\r")
-            for i in range(num_hashes):
+            for h in range(num_hashes):
                 a = randint(0, 100_000)
                 b = randint(0, 100_000)
 
                 # nonzero() already filters zero values in the algorithm
-                value = binary_data[row, col]
-                result[i, col] = min(custom_hash(value, a, b), result[i, col])
+                if binary_data[row, col] == 1:
+                    result[h, col] = min(custom_hash(row, a, b), result[h, col])
 
         return result
 
