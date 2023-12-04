@@ -67,9 +67,9 @@ num_duplicates = len(all_duplicates)
 print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}")
 
 
-# Do shingling
+# Get representation as set
 for product in products:
-    product.shingle(shingle_size)
+    product.find_set_representation(shingle_size)
 
 
 # Minhash

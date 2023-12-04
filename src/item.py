@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 import numpy as np
+import re
 
 from scipy.sparse import lil_matrix
 from random import randint
@@ -8,6 +9,10 @@ from random import randint
 # Jaccard score of the sets c1 and c2
 def jaccard(c1, c2):
     return len(c1.intersection(c2)) / len(c1.union(c2))
+
+def parse_float(string: str) -> list[float]:
+    occurrences = re.findall(r"\d+\.[\d+]*", string)
+    return [float(i) for i in occurrences]
 
 def custom_hash(x, a, b):
     # Realistically, shingle size is not going to be much larger than 10,
@@ -22,7 +27,7 @@ class Item():
     Simple class to make working with items a bit easier
     """
 
-    def __init__(self, model_id: str, features: dict[str, list[str]], shop: str, title: str):
+    def __init__(self, model_id: str, features: dict[str, str], shop: str, title: str):
         self.id = model_id
 
         self.shop = shop
@@ -31,6 +36,9 @@ class Item():
         self.signature: Signature = None
 
         self.features = features
+
+        self.weight = f"Weight {self.get_weight()}"
+        self.diagonal = self.get_diagonal()
 
 
     def __str__(self) -> str:
@@ -46,21 +54,57 @@ class Item():
         return self.id == other.id
 
 
+    def get_weight(self) -> float:
+        all_weights_found = []
+
+        for value in self.features.values():
+            if "lb" in value:
+                all_weights_found.append(parse_float(value))
+
+        if len(all_weights_found) == 0:
+            return None
+
+        # Return smallest of all weights, as that is most reliable
+        # (doesn't include stand (hopefully))
+        return min(all_weights_found)
+
+
+    def get_diagonal(self) -> float:
+        ...
+
+
     def make_shingle_string(self) -> str:
         return self.title.replace(" ", "")
 
 
-    def shingle(self, shingle_size: int) -> None:
+    def find_set_representation(self, shingle_size: int) -> None:
+        result = set()
+
         string = self.make_shingle_string()
 
-        self.shingled_data = set()
-
         for i in range(len(string) - shingle_size):
-            self.shingled_data.add(string[i:i+shingle_size])
+            result.add(string[i:i+shingle_size])
 
+        result.add(self.weight_quantile)
+        result.add(self.diagonal_quantile)
+
+        self.shingled_data = result
 
 
     # Class methods below here
+    def calc_quantiles(products: list[Item]) -> None:
+        weights = [product.weight for product in products]
+        diagonals = [product.diagonal for product in products]
+
+        weight_quantiles = np.quantile(weights, [0.33, 0.67])
+        diagonal_quantiles = np.quantile(diagonals, [0.33, 0.67])
+
+        for product in products:
+            product.weight_quantile = np.searchsorted(weight_quantiles, product.weight) if product.weight is not None else -1
+
+            product.diagonal_quantile = np.searchsorted(diagonal_quantiles, product.diagonal) if product.diagonal is not None else -1
+
+
     def minhash(products: list[Item]) -> lil_matrix:
         shingles = [product.shingled_data for product in products]
 
