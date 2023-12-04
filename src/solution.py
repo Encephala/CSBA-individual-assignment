@@ -19,6 +19,7 @@ shingle_size = 5
 num_hashes = 300
 num_bands = 100
 num_rows = num_hashes // num_bands
+# Check that num_hashes is divisible by num_bands
 assert num_bands * num_rows == num_hashes
 
 print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
@@ -136,9 +137,12 @@ print(f"F1*: {F1:.2%}")
 print("Detecting duplicates")
 
 def similarity_score(pair: tuple[item]):
+    item, other_item = pair
+
     if item.shop == other_item.shop:
         return 0
 
+    # return SequenceMatcher(None, item.title, other_item.title).ratio()
     return jellyfish.jaro_winkler_similarity(pair[0].title, pair[1].title)
 
 
@@ -147,7 +151,7 @@ for i, pair in enumerate(intermediate_duplicates):
     print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
 
     similarity = similarity_score(pair)
-    if similarity > 0.7:
+    if similarity > 0.6:
         final_duplicates.add(pair)
 
 
