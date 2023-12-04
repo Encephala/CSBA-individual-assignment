@@ -12,6 +12,7 @@ I did this assignment individually.
 - Implement hard blocks for not being equal if in same shop, etc.
 - Better item representation than (shingles of) title
     - (try to) Find brand of product
+- Refactor `solution.py` to be modular and use a `main` function
 - Tune some of the parameters (shingle size, n)
 
 ## Questions:
