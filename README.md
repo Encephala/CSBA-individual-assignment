@@ -15,6 +15,9 @@ I did this assignment individually.
 - Refactor `solution.py` to be modular and use a `main` function
 - Tune some of the parameters (shingle size, n)
 
+#### Maybe
+- Fix `Item` to be more consistent about return/setting own parameters
+
 ## Questions:
 -
 
