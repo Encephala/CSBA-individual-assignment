@@ -12,6 +12,8 @@ from collections import defaultdict
 
 from item import Item, Signature
 
+import numpy as np
+
 
 # Parameters
 shingle_size = 5
@@ -67,6 +69,10 @@ num_duplicates = len(all_duplicates)
 print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}")
 
 
+# Calculate weight/diagonal quantiles
+Item.calc_quantiles(products)
+
+
 # Get representation as set
 for product in products:
     product.find_set_representation(shingle_size)
@@ -90,7 +96,7 @@ num_buckets = 15485863
 buckets: dict[int, list[Item]] = defaultdict(list)
 
 for product in products:
-    hashes = product.signature.hash(num_bands, num_rows)
+    hashes = product.signature.hashes(num_bands, num_rows)
     for subvector_hash in hashes:
         buckets[subvector_hash % num_buckets].append(product)
 
