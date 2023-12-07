@@ -53,7 +53,7 @@ class Item():
         return self.__str__()
 
     def __hash__(self) -> int:
-        return hash(self.title + self.id)
+        return hash(self.title + self.shop)
 
     def __eq__(self, other) -> bool:
         return self.id == other.id
