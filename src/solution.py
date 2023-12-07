@@ -16,12 +16,12 @@ from item import Item, Signature
 
 
 # Parameters
-shingle_size = 3
+shingle_size = 5
 
-num_hashes = 300
-num_bands = 100
-num_rows = num_hashes // num_bands
-# Check that num_hashes is divisible by num_bands
+num_hashes = 200
+num_rows = 2
+num_bands = num_hashes // num_rows
+# Check that num_hashes is divisible by num_rows
 assert num_bands * num_rows == num_hashes
 
 print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
@@ -148,8 +148,10 @@ def similarity_score(pair: tuple[item]):
     if item.brand != other_item.brand:
         return 0
 
+    title, other_title = [item.title.replace(" ", "").lower() for item in pair]
+
     # return SequenceMatcher(None, item.title, other_item.title).ratio()
-    return jellyfish.jaro_winkler_similarity(pair[0].title, pair[1].title)
+    return jellyfish.jaro_winkler_similarity(title, other_title)
 
 
 final_duplicates = set()
@@ -157,7 +159,10 @@ for i, pair in enumerate(intermediate_duplicates):
     print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
 
     similarity = similarity_score(pair)
-    if similarity > 0.6:
+
+    # Threshold 0.7 seems pretty good,
+    # but lower thresholds may maintain more TP
+    if similarity > 0.7:
         final_duplicates.add(pair)
 
 

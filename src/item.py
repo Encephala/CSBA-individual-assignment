@@ -122,17 +122,40 @@ class Item():
         return self.title.replace(" ", "")
 
 
-    def find_set_representation(self, shingle_size: int) -> None:
+    def find_set_representation(self, shingle_size: int, max_len: int = 15) -> None:
         result = set()
 
-        # Add shingles of words in title
-        for word in self.title.lower().split(" "):
-            result.add(word)
-            # if len(word) < shingle_size:
-            #     result.add(word)
+        # for word in self.title.split(" "):
+        #     result.add(word)
+        #     # if len(word) < shingle_size:
+        #     #     result.add(word)
 
-            # for i in range(len(word) - shingle_size + 1):
-            #     result.add(word[i:i + shingle_size])
+        #     # for i in range(len(word) - shingle_size + 1):
+        #     #     result.add(word[i:i + shingle_size])
+
+        # title_simple = self.make_shingle_string()
+
+        # for i in range(len(title_simple) - shingle_size + 1):
+        #     result.add(title_simple[i:i + shingle_size])
+
+        # for val in self.features.values():
+        #     # Don't include features that are too long, they won't ever match anyways
+        #     if len(val) < max_len:
+        #         result.add(val.replace(" ", "").lower())
+
+
+        regex_title = r"([a-zA-Z0-9]*(([0-9]+[ˆ0-9, ]+)|([ˆ0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
+        regex_values = r"(\d+(\.\d+)?[a-zA-Z]+|ˆ\d+(\.\d+)?)"
+
+        for match in re.finditer(regex_title, self.title):
+            result.add(match.group().strip())
+
+        for val in self.features.values():
+            for match in re.finditer(regex_values, val):
+                result.add(match.group().strip())
+
+            for match in re.finditer(regex_title, val):
+                result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -156,8 +179,8 @@ class Item():
         weights = [product.weight for product in products if product.weight is not None]
         diagonals = [product.diagonal for product in products if product.diagonal is not None]
 
-        weight_quantiles = np.quantile(weights, [0.3, 0.7])
-        diagonal_quantiles = np.quantile(diagonals, [0.3, 0.7])
+        weight_quantiles = np.quantile(weights, [0.1, 0.3, 0.5, 0.7, 0.9])
+        diagonal_quantiles = np.quantile(diagonals, [0.1, 0.3, 0.5, 0.7, 0.9])
 
         for product in products:
             product.weight_quantile = np.searchsorted(weight_quantiles, product.weight) if product.weight is not None else None
@@ -180,6 +203,8 @@ class Item():
                 if feature in representation:
                     # Can be any value, just have to create the entry
                     result[i, j] = True
+
+        print(f"Minhash size: {result.shape}")
 
         return result
 
@@ -208,21 +233,15 @@ class Signature():
     def __init__(self, signature: np.ndarray):
         self.value = signature
 
-        self.hashed: list[int] = None
-
     # Hash of each band of the signature
     def hashes(self, num_bands, num_rows) -> list[int]:
-        if self.hashed is not None:
-            return self.hashed
+        result = []
 
-        else:
-            self.hashed = []
+        for i in range(num_bands):
+            band = self.value[i * num_rows:(i + 1) * num_rows]
+            result.append(sum([hash(i) for i in band]))
 
-            for i in range(num_bands):
-                band = self.value[i * num_rows:(i + 1) * num_rows]
-                self.hashed.append(sum([hash(i) for i in band]))
-
-            return self.hashed
+        return result
 
     def __str__(self) -> str:
         return f"Signature: {str(self.value):.10s}..."
