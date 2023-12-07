@@ -3,20 +3,20 @@
 # Imports
 import json
 
-import jellyfish
-
 from itertools import combinations
 from math import comb
 from difflib import SequenceMatcher
 from collections import defaultdict
 
+import numpy as np
+import jellyfish
+
 from item import Item, Signature
 
-import numpy as np
 
 
 # Parameters
-shingle_size = 5
+shingle_size = 3
 
 num_hashes = 300
 num_bands = 100
@@ -90,15 +90,12 @@ for i, signature in enumerate(signatures.T):
 
 
 # Locality-sensitive hashing
-# A prime significantly larger than the number of products
-num_buckets = 15485863
-
 buckets: dict[int, list[Item]] = defaultdict(list)
 
 for product in products:
     hashes = product.signature.hashes(num_bands, num_rows)
     for subvector_hash in hashes:
-        buckets[subvector_hash % num_buckets].append(product)
+        buckets[subvector_hash].append(product)
 
 
 # F1*-score
@@ -146,6 +143,9 @@ def similarity_score(pair: tuple[item]):
     item, other_item = pair
 
     if item.shop == other_item.shop:
+        return 0
+
+    if item.brand != other_item.brand:
         return 0
 
     # return SequenceMatcher(None, item.title, other_item.title).ratio()

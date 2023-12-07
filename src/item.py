@@ -43,6 +43,7 @@ class Item():
         self.weight = self.get_weight()
         self.diagonal = self.get_diagonal()
         self.refresh_rate = self.get_refresh_rate()
+        self.brand = self.get_brand()
 
 
     def __str__(self) -> str:
@@ -103,6 +104,19 @@ class Item():
 
         return None
 
+    def get_brand(self) -> str:
+        shop_map = {
+            "bestbuy.com": "Brand",
+            "newegg.com": "Brand Name",
+            "amazon.com": "Brand",
+            "thenerds.net": "Brand Name:",
+        }
+
+        if shop_map[self.shop] in self.features:
+            return self.features[shop_map[self.shop]].lower()
+
+        return None
+
 
     def make_shingle_string(self) -> str:
         return self.title.replace(" ", "")
@@ -111,10 +125,14 @@ class Item():
     def find_set_representation(self, shingle_size: int) -> None:
         result = set()
 
-        string = self.make_shingle_string()
+        # Add shingles of words in title
+        for word in self.title.lower().split(" "):
+            result.add(word)
+            # if len(word) < shingle_size:
+            #     result.add(word)
 
-        for i in range(len(string) - shingle_size):
-            result.add(string[i:i + shingle_size])
+            # for i in range(len(word) - shingle_size + 1):
+            #     result.add(word[i:i + shingle_size])
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -125,7 +143,10 @@ class Item():
         if self.refresh_rate is not None:
             result.add(f"Refresh Rate {self.refresh_rate}")
 
-        self.shingled_data = result
+        if self.brand is not None:
+            result.add(f"Brand {self.brand}")
+
+        self.set_representation = result
 
 
     # Class methods below here
@@ -145,18 +166,19 @@ class Item():
 
 
     def minhash(products: list[Item]) -> lil_matrix:
-        shingles = [product.shingled_data for product in products]
+        representations = [product.set_representation for product in products]
 
-        all_shingles = set()
-        for shingle in shingles:
-            all_shingles.update(shingle)
+        all_componenents = set()
+        for representation in representations:
+            all_componenents.update(representation)
 
         # Premature optimisation btw (^:
-        result = lil_matrix((len(all_shingles), len(products)))
+        result = lil_matrix((len(all_componenents), len(products)))
 
-        for i, feature in enumerate(all_shingles):
-            for j, shingle in enumerate(shingles):
-                if feature in shingle:
+        for i, feature in enumerate(all_componenents):
+            for j, representation in enumerate(representations):
+                if feature in representation:
+                    # Can be any value, just have to create the entry
                     result[i, j] = True
 
         return result
@@ -168,6 +190,7 @@ class Item():
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix
         rows, cols = binary_data.nonzero()
         length = len(list(zip(rows, cols)))
+
         for i, (row, col) in enumerate(zip(rows, cols)):
             print(f"{i} ({i / length:.1%})", end = "\r")
             for h in range(num_hashes):
