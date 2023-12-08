@@ -222,9 +222,8 @@ class Item():
                 a = randint(0, 100_000)
                 b = randint(0, 100_000)
 
-                # nonzero() already filters zero values in the algorithm
-                if binary_data[row, col] == 1:
-                    result[h, col] = min(custom_hash(row, a, b), result[h, col])
+                # nonzero() already filters zero values
+                result[h, col] = min(custom_hash(row, a, b), result[h, col])
 
         return result
 
@@ -244,7 +243,7 @@ class Signature():
         return result
 
     def __str__(self) -> str:
-        return f"Signature: {str(self.value):.10s}..."
+        return f"Signature: {str(self.value):.40s}..."
 
     def __repr__(self) -> str:
         return self.__str__()

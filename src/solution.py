@@ -135,6 +135,8 @@ F1 = 2 * precision_star * recall_star / (precision_star + recall_star)
 
 print(f"F1*: {F1:.2%}")
 
+print(f"Comparison ratio: {len(intermediate_duplicates) / comb(len(products), 2):.2%}")
+
 
 # Robust duplicate detection
 print("Detecting duplicates")
