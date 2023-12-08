@@ -18,8 +18,8 @@ from item import Item, Signature
 # Parameters
 shingle_size = 5
 
-num_hashes = 200
-num_rows = 2
+num_hashes = 720
+num_rows = 6
 num_bands = num_hashes // num_rows
 # Check that num_hashes is divisible by num_rows
 assert num_bands * num_rows == num_hashes

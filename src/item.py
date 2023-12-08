@@ -154,8 +154,8 @@ class Item():
             for match in re.finditer(regex_values, val):
                 result.add(match.group().strip())
 
-            for match in re.finditer(regex_title, val):
-                result.add(match.group().strip())
+            # for match in re.finditer(regex_title, val):
+            #     result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -214,14 +214,14 @@ class Item():
 
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix
         rows, cols = binary_data.nonzero()
-        length = len(list(zip(rows, cols)))
 
-        for i, (row, col) in enumerate(zip(rows, cols)):
-            print(f"{i} ({i / length:.1%})", end = "\r")
-            for h in range(num_hashes):
-                a = randint(0, 100_000)
-                b = randint(0, 100_000)
+        for i, h in enumerate(range(num_hashes)):
+            print(f"{i} ({i / num_hashes:.1%})", end = "\r")
 
+            a = randint(0, 100_000)
+            b = randint(0, 100_000)
+
+            for row, col in zip(rows, cols):
                 # nonzero() already filters zero values
                 result[h, col] = min(custom_hash(row, a, b), result[h, col])
 
