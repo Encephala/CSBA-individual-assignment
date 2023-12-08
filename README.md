@@ -9,11 +9,10 @@ so as to reduce the cost of the subsequent duplicate detection through `...`.
 I did this assignment individually.
 
 ## ToDo
-- Implement hard blocks for not being equal if in same shop, etc.
 - Better item representation than (shingles of) title
-    - (try to) Find brand of product
+    - Find brand in title if not found in features (given set of known brands)
 - Refactor `solution.py` to be modular and use a `main` function
-- Tune some of the parameters (shingle size, n)
+- Tune some of the parameters (shingle size, num_hash)
 
 #### Maybe
 - Fix `Item` to be more consistent about return/setting own parameters
