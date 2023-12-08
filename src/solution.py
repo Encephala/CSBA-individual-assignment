@@ -18,8 +18,8 @@ from item import Item, Signature
 # Parameters
 shingle_size = 5
 
-num_hashes = 720
-num_rows = 6
+num_hashes = 300
+num_rows = 5
 num_bands = num_hashes // num_rows
 # Check that num_hashes is divisible by num_rows
 assert num_bands * num_rows == num_hashes
@@ -29,12 +29,9 @@ print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_row
 filename = "data/TVs-all-merged.json"
 
 # Load in data
-try:
-    with open(filename, "r") as file:
-        data = json.load(file)
-except FileNotFoundError:
-    with open(f"../{filename}", "r") as file:
-        data = json.load(file)
+with open(filename, "r") as file:
+    data = json.load(file)
+
 
 # Get all item instances into big array
 products = []

@@ -122,21 +122,21 @@ class Item():
         return self.title.replace(" ", "")
 
 
-    def find_set_representation(self, shingle_size: int, max_len: int = 15) -> None:
+    def find_set_representation(self, shingle_size: int, max_len: int = 10) -> None:
         result = set()
 
         # for word in self.title.split(" "):
-        #     result.add(word)
-        #     # if len(word) < shingle_size:
-        #     #     result.add(word)
+        #     # result.add(word)
+        #     if len(word) < shingle_size:
+        #         result.add(word)
 
         #     # for i in range(len(word) - shingle_size + 1):
         #     #     result.add(word[i:i + shingle_size])
 
-        # title_simple = self.make_shingle_string()
+        # # title_simple = self.make_shingle_string()
 
-        # for i in range(len(title_simple) - shingle_size + 1):
-        #     result.add(title_simple[i:i + shingle_size])
+        # # for i in range(len(title_simple) - shingle_size + 1):
+        # #     result.add(title_simple[i:i + shingle_size])
 
         # for val in self.features.values():
         #     # Don't include features that are too long, they won't ever match anyways
@@ -144,8 +144,8 @@ class Item():
         #         result.add(val.replace(" ", "").lower())
 
 
-        regex_title = r"([a-zA-Z0-9]*(([0-9]+[ˆ0-9, ]+)|([ˆ0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
-        regex_values = r"(\d+(\.\d+)?[a-zA-Z]+|ˆ\d+(\.\d+)?)"
+        regex_title = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
+        regex_values = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
 
         for match in re.finditer(regex_title, self.title):
             result.add(match.group().strip())
@@ -154,8 +154,8 @@ class Item():
             for match in re.finditer(regex_values, val):
                 result.add(match.group().strip())
 
-            # for match in re.finditer(regex_title, val):
-            #     result.add(match.group().strip())
+            for match in re.finditer(regex_title, val):
+                result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
