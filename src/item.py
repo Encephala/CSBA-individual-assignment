@@ -5,6 +5,7 @@ import re
 
 from scipy.sparse import lil_matrix
 from random import randint
+from collections import defaultdict
 
 # Jaccard score of the sets c1 and c2
 def jaccard(c1, c2):
@@ -141,25 +142,6 @@ class Item():
     def find_set_representation(self, shingle_size: int, max_len: int = 10) -> None:
         result = set()
 
-        # for word in self.title.split(" "):
-        #     # result.add(word)
-        #     if len(word) < shingle_size:
-        #         result.add(word)
-
-        #     # for i in range(len(word) - shingle_size + 1):
-        #     #     result.add(word[i:i + shingle_size])
-
-        # # title_simple = self.make_shingle_string()
-
-        # # for i in range(len(title_simple) - shingle_size + 1):
-        # #     result.add(title_simple[i:i + shingle_size])
-
-        # for val in self.features.values():
-        #     # Don't include features that are too long, they won't ever match anyways
-        #     if len(val) < max_len:
-        #         result.add(val.replace(" ", "").lower())
-
-
         regex_title = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
         regex_values = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
 
@@ -219,6 +201,23 @@ class Item():
                 if feature in representation:
                     # Can be any value, just have to create the entry
                     result[i, j] = True
+
+        # Remove rows which only contain a single value
+        rows, _ = result.nonzero()
+
+        occurrences = defaultdict(int)
+
+        for row in rows:
+            occurrences[row] += 1
+
+        single_occurrences = dict(filter(lambda x: x[1] == 1, occurrences.items()))
+
+        for row in reversed(single_occurrences.keys()):
+            # https://stackoverflow.com/questions/13077527/is-there-a-numpy-delete-equivalent-for-sparse-matrices
+            result.rows = np.delete(result.rows, row)
+            result.data = np.delete(result.data, row)
+            result._shape = (result._shape[0] - 1, result._shape[1])
+
 
         print(f"Binary matrix size: {result.shape}")
 
