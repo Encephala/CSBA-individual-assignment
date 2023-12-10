@@ -2,24 +2,24 @@
 
 # Imports
 import json
+import warnings
 
 from itertools import combinations
 from math import comb
 from difflib import SequenceMatcher
 from collections import defaultdict
+from sklearn.linear_model import LogisticRegression
 
 import numpy as np
 import jellyfish
 
 from item import Item, Signature
 
-
+warnings.filterwarnings("ignore", category = DeprecationWarning)
 
 # Parameters
-shingle_size = 5
-
 num_hashes = 300
-num_rows = 5
+num_rows = 3
 num_bands = num_hashes // num_rows
 # Check that num_hashes is divisible by num_rows
 assert num_bands * num_rows == num_hashes
@@ -70,7 +70,7 @@ print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}"
 Item.calc_quantiles(products)
 
 # Find brands for products which it wasn't found yet
-all_brands = set()
+all_brands: set[str] = set()
 for product in products:
     if product.brand:
         all_brands.add(product.brand)
@@ -85,7 +85,7 @@ for product in products:
 
 # Get representation as set
 for product in products:
-    product.find_set_representation(shingle_size)
+    product.find_set_representation()
 
 
 # Minhash
@@ -141,47 +141,59 @@ print(f"FN*: {FNstar}")
 precision_star = TPstar / (TPstar + FPstar)
 recall_star = TPstar / (TPstar + FNstar)
 
-F1 = 2 * precision_star * recall_star / (precision_star + recall_star)
+F1_star = 2 * precision_star * recall_star / (precision_star + recall_star)
 
-print(f"F1*: {F1:.2%}")
+print(f"F1*: {F1_star:.2%}")
 
-print(f"Comparison ratio: {len(intermediate_duplicates) / comb(len(products), 2):.2%}")
+print(f"Comparison ratio: {len(intermediate_duplicates) / comb(len(products), 2):.1%}")
 
 
 # Robust duplicate detection
 print("Detecting duplicates")
 
-def similarity_score(pair: tuple[item]):
+# Jaccard score of the sets c1 and c2
+def jaccard(pair):
+    c1, c2 = [item.set_representation for item in pair]
+    return len(c1.intersection(c2)) / len(c1.union(c2))
+
+def similarity_scores(pair: tuple[item]):
     item, other_item = pair
 
     if item.shop == other_item.shop:
-        return 0
+        return [0, 0]
 
     if item.brand != other_item.brand:
-        return 0
+        return [0, 0]
+
 
     representation, other_representation = [sorted(list(item.set_representation)) for item in pair]
-    return SequenceMatcher(None, representation, other_representation).ratio()
+    similarity_SM = SequenceMatcher(None, representation, other_representation).ratio()
 
-    # title, other_title = [item.title.replace(" ", "").lower() for item in pair]
-    # return jellyfish.jaro_winkler_similarity(title, other_title)
+    title, other_title = [item.title.replace(" ", "").lower() for item in pair]
+    similarity_JW = jellyfish.jaro_winkler_similarity(title, other_title)
+
+    return [similarity_SM, similarity_JW]
 
 
-final_duplicates = set()
+# Fit logit model
+predictor = LogisticRegression().fit(
+    [similarity_scores(pair) for pair in intermediate_duplicates],
+    [pair in all_duplicates for pair in intermediate_duplicates]
+)
+
+print("Done fitting logit model")
+print(f"Coefficients: {predictor.coef_}")
+
+
+final_duplicates: set[tuple[Item]] = set()
 for i, pair in enumerate(intermediate_duplicates):
     print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
 
-    similarity = similarity_score(pair)
+    similarity = predictor.predict_proba([similarity_scores(pair)])[0][1]
 
-    # # Threshold 0.7 seems pretty good,
-    # # but lower thresholds may maintain more TP
-    # if similarity > 0.7:
-    #     final_duplicates.add(pair)
-
-    # Threshold 0.35 seems pretty good for SequenceMatcher approach
-    if similarity > 0.35:
+    if similarity > 0.05:
+        # print(f"{similarity_scores(pair)} -> {similarity}")
         final_duplicates.add(pair)
-
 
 print("Done checking duplicates")
 

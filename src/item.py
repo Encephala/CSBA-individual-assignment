@@ -7,9 +7,6 @@ from scipy.sparse import lil_matrix
 from random import randint
 from collections import defaultdict
 
-# Jaccard score of the sets c1 and c2
-def jaccard(c1, c2):
-    return len(c1.intersection(c2)) / len(c1.union(c2))
 
 def parse_numbers(string: str) -> list[float]:
     # Matches 1.2, 1., 1 and .2
@@ -19,9 +16,8 @@ def parse_numbers(string: str) -> list[float]:
     return [float(i) for i in occurrences]
 
 def custom_hash(x, a, b):
-    # Realistically, shingle size is not going to be much larger than 10,
-    # so we can afford to pick some static prime here
-    p = 379
+    # Some large prime
+    p = 7840153
 
     return a + b * x % p
 
@@ -45,7 +41,7 @@ class Item():
 
         self.title = replace_all(
                         replace_all(title, ['"', " inch", "-inch", "inches", "Inch", "-Inch", " Inch"], "inch"),
-                        ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower()
+                        ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower().strip()
 
         self.signature: Signature = None
 
@@ -53,7 +49,7 @@ class Item():
             key.lower().replace(":", ""):
                 replace_all(
                     replace_all(val, ['"', " inch", "-inch", "inches", "Inch", "-Inch", " Inch"], "inch"),
-                    ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower()
+                    ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower().strip()
 
             for key, val in features.items()
         }
@@ -135,25 +131,28 @@ class Item():
         return None
 
 
-    def make_shingle_string(self) -> str:
-        return self.title.replace(" ", "")
-
-
-    def find_set_representation(self, shingle_size: int, max_len: int = 10) -> None:
+    def find_set_representation(self, max_len: int = 10) -> None:
         result = set()
 
-        regex_title = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
-        regex_values = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
-
-        for match in re.finditer(regex_title, self.title):
-            result.add(match.group().strip())
+        for word in self.title.split(" "):
+            result.add(word)
 
         for val in self.features.values():
-            for match in re.finditer(regex_values, val):
-                result.add(match.group().strip())
+            if len(val) < max_len:
+                result.add(val)
 
-            for match in re.finditer(regex_title, val):
-                result.add(match.group().strip())
+        # regex_words = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
+        # regex_number_unit = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
+
+        # for match in re.finditer(regex_words, self.title):
+        #     result.add(match.group().strip())
+
+        # for val in self.features.values():
+        #     for match in re.finditer(regex_number_unit, val):
+        #         result.add(match.group().strip())
+
+        #     for match in re.finditer(regex_words, val):
+        #         result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -189,20 +188,26 @@ class Item():
     def minhash(products: list[Item]) -> lil_matrix:
         representations = [product.set_representation for product in products]
 
+        # Set to ensure uniqueness
         all_componenents = set()
         for representation in representations:
             all_componenents.update(representation)
 
-        # Premature optimisation btw (^:
-        result = lil_matrix((len(all_componenents), len(products)))
+        # List to have a well-defined order
+        all_components_list = list(all_componenents)
 
-        for i, feature in enumerate(all_componenents):
+        result = lil_matrix((len(all_components_list), len(products)))
+
+        # Loop over the list to maintain ordering
+        for i, feature in enumerate(all_components_list):
             for j, representation in enumerate(representations):
                 if feature in representation:
                     # Can be any value, just have to create the entry
                     result[i, j] = True
 
-        # Remove rows which only contain a single value
+
+        # Clean up the data, removing components which only appear for a single product
+        # Remove rows from result which only contain a single value
         rows, _ = result.nonzero()
 
         occurrences = defaultdict(int)
@@ -217,6 +222,10 @@ class Item():
             result.rows = np.delete(result.rows, row)
             result.data = np.delete(result.data, row)
             result._shape = (result._shape[0] - 1, result._shape[1])
+
+            # Also remove corresponding components from products' set representations
+            for product in products:
+                product.set_representation.discard(all_components_list[row])
 
 
         print(f"Binary matrix size: {result.shape}")

@@ -9,14 +9,16 @@ so as to reduce the cost of the subsequent duplicate detection through `...`.
 I did this assignment individually.
 
 ## ToDo
-- Better item representation than (shingles of) title
-    - Find brand in title if not found in features (given set of known brands)
 - Refactor `solution.py` to be modular and use a `main` function
 - Tune some of the parameters (shingle size, num_hash)
+- Implement cross validation
 
 #### Maybe
 - Fix `Item` to be more consistent about return/setting own parameters
 
 ## Questions:
 -
+
+## Notes
+- Filtering #occurrences of components <= 2 rather than == 1 yields worse results, too much loss of info
 
