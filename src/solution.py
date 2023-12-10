@@ -69,6 +69,19 @@ print(f"Total number of duplicates: {num_duplicates} / {comb(len(products), 2)}"
 # Calculate weight/diagonal quantiles
 Item.calc_quantiles(products)
 
+# Find brands for products which it wasn't found yet
+all_brands = set()
+for product in products:
+    if product.brand:
+        all_brands.add(product.brand)
+
+for product in products:
+    if not product.brand:
+        for brand in all_brands:
+            if brand in product.title:
+                product.brand = brand
+                break
+
 
 # Get representation as set
 for product in products:
@@ -147,10 +160,11 @@ def similarity_score(pair: tuple[item]):
     if item.brand != other_item.brand:
         return 0
 
-    title, other_title = [item.title.replace(" ", "").lower() for item in pair]
+    representation, other_representation = [sorted(list(item.set_representation)) for item in pair]
+    return SequenceMatcher(None, representation, other_representation).ratio()
 
-    # return SequenceMatcher(None, item.title, other_item.title).ratio()
-    return jellyfish.jaro_winkler_similarity(title, other_title)
+    # title, other_title = [item.title.replace(" ", "").lower() for item in pair]
+    # return jellyfish.jaro_winkler_similarity(title, other_title)
 
 
 final_duplicates = set()
@@ -159,9 +173,13 @@ for i, pair in enumerate(intermediate_duplicates):
 
     similarity = similarity_score(pair)
 
-    # Threshold 0.7 seems pretty good,
-    # but lower thresholds may maintain more TP
-    if similarity > 0.7:
+    # # Threshold 0.7 seems pretty good,
+    # # but lower thresholds may maintain more TP
+    # if similarity > 0.7:
+    #     final_duplicates.add(pair)
+
+    # Threshold 0.35 seems pretty good for SequenceMatcher approach
+    if similarity > 0.35:
         final_duplicates.add(pair)
 
 

@@ -25,6 +25,13 @@ def custom_hash(x, a, b):
     return a + b * x % p
 
 
+def replace_all(string: str, keys: list[str], to: str) -> str:
+    for key in keys:
+        string = string.replace(key, to)
+
+    return string
+
+
 class Item():
     """
     Simple class to make working with items a bit easier
@@ -33,18 +40,27 @@ class Item():
     def __init__(self, model_id: str, features: dict[str, str], shop: str, title: str):
         self.id = model_id
 
-        self.shop = shop
-        self.title = title
+        self.shop = shop.lower()
+
+        self.title = replace_all(
+                        replace_all(title, ['"', " inch", "-inch", "inches", "Inch", "-Inch", " Inch"], "inch"),
+                        ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower()
 
         self.signature: Signature = None
 
-        self.features = features
+        self.features = {
+            key.lower().replace(":", ""):
+                replace_all(
+                    replace_all(val, ['"', " inch", "-inch", "inches", "Inch", "-Inch", " Inch"], "inch"),
+                    ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower()
+
+            for key, val in features.items()
+        }
 
         self.weight = self.get_weight()
         self.diagonal = self.get_diagonal()
         self.refresh_rate = self.get_refresh_rate()
         self.brand = self.get_brand()
-
 
     def __str__(self) -> str:
         return f"Item: '{self.id}'"
@@ -61,10 +77,10 @@ class Item():
 
     def get_weight(self) -> float:
         shop_map = {
-            "bestbuy.com": ["Weight", "Product Weight"],
-            "newegg.com": ["Weight Without Stand"],
-            "amazon.com": ["Item Weight", "Product Dimensions", "Product Dimensions:", "Shipping Weight"], # If Product Dimensions, have to split(";")[1]
-            "thenerds.net": ["Weight (Approximate):"],
+            "bestbuy.com": ["weight", "product weight"],
+            "newegg.com": ["weight without stand"],
+            "amazon.com": ["item Weight", "product dimensions", "shipping weight"], # If Product Dimensions, have to split(";")[1]
+            "thenerds.net": ["weight (approximate)"],
         }
 
         for feature_name in shop_map[self.shop]:
@@ -91,10 +107,10 @@ class Item():
 
     def get_diagonal(self) -> float:
         shop_map = {
-            "bestbuy.com": ["Screen Size Class", "Screen Size (Measured Diagonally)"],
-            "newegg.com": ["Screen Size"],
-            "amazon.com": ["Display Size"],
-            "thenerds.net": ["Screen Size:"],
+            "bestbuy.com": ["screen size class", "screen size (measured diagonally)"],
+            "newegg.com": ["screen size"],
+            "amazon.com": ["display size"],
+            "thenerds.net": ["screen size"],
         }
 
         for feature_name in shop_map[self.shop]:
@@ -106,10 +122,10 @@ class Item():
 
     def get_brand(self) -> str:
         shop_map = {
-            "bestbuy.com": "Brand",
-            "newegg.com": "Brand Name",
-            "amazon.com": "Brand",
-            "thenerds.net": "Brand Name:",
+            "bestbuy.com": "brand",
+            "newegg.com": "brand name",
+            "amazon.com": "brand",
+            "thenerds.net": "brand name",
         }
 
         if shop_map[self.shop] in self.features:
@@ -204,7 +220,7 @@ class Item():
                     # Can be any value, just have to create the entry
                     result[i, j] = True
 
-        print(f"Minhash size: {result.shape}")
+        print(f"Binary matrix size: {result.shape}")
 
         return result
 
@@ -215,8 +231,8 @@ class Item():
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix
         rows, cols = binary_data.nonzero()
 
-        for i, h in enumerate(range(num_hashes)):
-            print(f"{i} ({i / num_hashes:.1%})", end = "\r")
+        for h in range(num_hashes):
+            print(f"{h} ({h / num_hashes:.1%})", end = "\r")
 
             a = randint(0, 100_000)
             b = randint(0, 100_000)
