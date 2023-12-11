@@ -172,6 +172,7 @@ class Item():
     # Class methods below here
 
     # Calculates quantiles for weight and diagonal size
+    @staticmethod
     def calc_quantiles(products: list[Item]) -> None:
         weights = [product.weight for product in products if product.weight is not None]
         diagonals = [product.diagonal for product in products if product.diagonal is not None]
@@ -185,6 +186,7 @@ class Item():
             product.diagonal_quantile = np.searchsorted(diagonal_quantiles, product.diagonal) if product.diagonal is not None else None
 
 
+    @staticmethod
     def minhash(products: list[Item], do_print = True) -> lil_matrix:
         representations = [product.set_representation for product in products]
 
@@ -237,6 +239,7 @@ class Item():
         return result
 
 
+    @staticmethod
     def binary_to_signatures(binary_data: lil_matrix, num_hashes: int, do_print = True) -> np.ndarray:
         result = np.full([num_hashes, binary_data.shape[1]], float("inf"))
 

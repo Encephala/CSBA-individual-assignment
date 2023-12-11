@@ -162,34 +162,34 @@ def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]
     return precision, recall, F1
 
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], do_print: bool = True) -> set[tuple[Item]]:
+def similarity_scores(pair: tuple[Item]) -> list[int]:
+    item, other_item = pair
+
+    if item.shop == other_item.shop:
+        return [0, 0]
+
+    if item.brand != other_item.brand:
+        return [0, 0]
+
+
+    representation, other_representation = [sorted(list(item.set_representation)) for item in pair]
+    similarity_SM = SequenceMatcher(None, representation, other_representation).ratio()
+
+    title, other_title = [item.title.replace(" ", "").lower() for item in pair]
+    similarity_JW = jellyfish.jaro_winkler_similarity(title, other_title)
+
+    return [similarity_SM, similarity_JW]
+
+def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item]], LogisticRegression]:
     if do_print:
         print("Detecting duplicates")
 
-    def similarity_scores(pair: tuple[Item]):
-        item, other_item = pair
-
-        if item.shop == other_item.shop:
-            return [0, 0]
-
-        if item.brand != other_item.brand:
-            return [0, 0]
-
-
-        representation, other_representation = [sorted(list(item.set_representation)) for item in pair]
-        similarity_SM = SequenceMatcher(None, representation, other_representation).ratio()
-
-        title, other_title = [item.title.replace(" ", "").lower() for item in pair]
-        similarity_JW = jellyfish.jaro_winkler_similarity(title, other_title)
-
-        return [similarity_SM, similarity_JW]
-
-
-    # Fit logit model
-    predictor = LogisticRegression().fit(
-        [similarity_scores(pair) for pair in intermediate_duplicates],
-        [pair in all_duplicates for pair in intermediate_duplicates]
-    )
+    # Use provided predictor, otherwise fit model
+    if not predictor:
+        predictor = LogisticRegression().fit(
+            [similarity_scores(pair) for pair in intermediate_duplicates],
+            [pair in all_duplicates for pair in intermediate_duplicates]
+        )
 
     if do_print:
         print("Done fitting logit model")
@@ -210,7 +210,7 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicate
     if do_print:
         print("Done checking duplicates")
 
-    return final_duplicates
+    return final_duplicates, predictor
 
 
 if __name__ == "__main__":
@@ -241,6 +241,6 @@ if __name__ == "__main__":
     print(f"Comparison ratio: {len(intermediate_duplicates) / comb(len(products), 2):.1%}")
     print()
 
-    final_duplicates = duplicate_detection(intermediate_duplicates, all_duplicates)
+    final_duplicates, predictor = duplicate_detection(intermediate_duplicates, all_duplicates)
 
     evaluate(final_duplicates, all_duplicates, num_products)
