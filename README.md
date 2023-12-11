@@ -9,9 +9,10 @@ so as to reduce the cost of the subsequent duplicate detection through `...`.
 I did this assignment individually.
 
 ## ToDo
-- Refactor `solution.py` to be modular and use a `main` function
+- Train logit model on data and fix parameters rather than fitting each run
+    - Can I adjust parameters for unbalancedness of training data? Doesn't really matter I guess
 - Tune some of the parameters (shingle size, num_hash)
-- Implement cross validation
+- Implement bootstrapping
 
 #### Maybe
 - Fix `Item` to be more consistent about return/setting own parameters
