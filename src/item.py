@@ -185,7 +185,7 @@ class Item():
             product.diagonal_quantile = np.searchsorted(diagonal_quantiles, product.diagonal) if product.diagonal is not None else None
 
 
-    def minhash(products: list[Item]) -> lil_matrix:
+    def minhash(products: list[Item], do_print = True) -> lil_matrix:
         representations = [product.set_representation for product in products]
 
         # Set to ensure uniqueness
@@ -231,19 +231,21 @@ class Item():
                 product.set_representation.discard(all_components_list[row])
 
 
-        print(f"Binary matrix size: {result.shape}")
+        if do_print:
+            print(f"Binary matrix size: {result.shape}")
 
         return result
 
 
-    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int) -> np.ndarray:
+    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int, do_print = True) -> np.ndarray:
         result = np.full([num_hashes, binary_data.shape[1]], float("inf"))
 
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix
         rows, cols = binary_data.nonzero()
 
         for h in range(num_hashes):
-            print(f"{h} ({h / num_hashes:.1%})", end = "\r")
+            if do_print:
+                print(f"{h} ({h / num_hashes:.1%})", end = "\r")
 
             a = randint(0, 100_000)
             b = randint(0, 100_000)

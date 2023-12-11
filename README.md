@@ -4,7 +4,7 @@ This is my solution to the individual assignment of the Computer Science for Bus
 
 The problem is to detect duplicates in a large set (1624) of product descriptions of TVs from the web.
 This is done through preselection, applying locality-sensitive hashing to the data in order to find candidate duplicates,
-so as to reduce the cost of the subsequent duplicate detection through `...`.
+so as to reduce the cost of the subsequent duplicate detection through logistic regression with various similarity metrics as predictors.
 
 I did this assignment individually.
 

@@ -18,7 +18,6 @@ from item import Item, Signature
 warnings.filterwarnings("ignore", category = DeprecationWarning)
 
 
-
 def preprocess(products: list[Item]) -> None:
     # Calculate weight/diagonal quantiles
     Item.calc_quantiles(products)
@@ -41,7 +40,7 @@ def preprocess(products: list[Item]) -> None:
         product.find_set_representation()
 
 
-def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]]]:
+def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
     # Load in data
     with open(filename, "r") as file:
         data = json.load(file)
@@ -81,22 +80,25 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]]]:
 
     preprocess(products)
 
-    return products, all_duplicates
+    return products, all_duplicates, len(products)
 
 
-def minhash(products: list[Item]) -> np.ndarray:
-    binary_data = Item.minhash(products)
+def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> np.ndarray:
+    binary_data = Item.minhash(products, do_print)
 
-    print("Calculating signatures")
-    signatures = Item.binary_to_signatures(binary_data, num_hashes)
-    print("Done calculating signatures")
+    if do_print:
+        print("Calculating signatures")
+    signatures = Item.binary_to_signatures(binary_data, num_hashes, do_print)
+
+    if do_print:
+        print("Done calculating signatures")
 
     for i, signature in enumerate(signatures.T):
         products[i].signature = Signature(signature)
 
 
 
-def LSH(products: list[Item]) -> set[tuple[Item]]:
+def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item]]:
     buckets: dict[int, list[Item]] = defaultdict(list)
 
     for product in products:
@@ -113,7 +115,7 @@ def LSH(products: list[Item]) -> set[tuple[Item]]:
     return result
 
 
-def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]]) -> None:
+def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], num_products: int, do_print: bool = True) -> list[float]:
     # F1-score
     FP = FN = TP = TN = 0
 
@@ -130,24 +132,28 @@ def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]
             FN += 1
 
     # Find TN
-    TN = comb(len(products), 2) - FN - FP - TP
+    TN = comb(num_products, 2) - FN - FP - TP
 
-
-    print(f"TP: {TP}")
-    print(f"FP: {FP}")
-    print(f"TN: {TN}")
-    print(f"FN: {FN}")
+    if do_print:
+        print(f"TP: {TP}")
+        print(f"FP: {FP}")
+        print(f"TN: {TN}")
+        print(f"FN: {FN}")
 
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
 
     F1 = 2 * precision * recall / (precision + recall)
 
-    print(f"F1: {F1:.2%}")
+    if do_print:
+        print(f"F1: {F1:.2%}")
+
+    return precision, recall, F1
 
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[Item]]:
-    print("Detecting duplicates")
+def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], do_print: bool = True) -> set[tuple[Item]]:
+    if do_print:
+        print("Detecting duplicates")
 
     def similarity_scores(pair: tuple[Item]):
         item, other_item = pair
@@ -174,13 +180,15 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[
         [pair in all_duplicates for pair in intermediate_duplicates]
     )
 
-    print("Done fitting logit model")
-    print(f"Coefficients: {predictor.intercept_} {predictor.coef_}")
+    if do_print:
+        print("Done fitting logit model")
+        print(f"Coefficients: {predictor.intercept_} {predictor.coef_}")
 
 
     final_duplicates: set[tuple[Item]] = set()
     for i, pair in enumerate(intermediate_duplicates):
-        print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
+        if do_print:
+            print(f"{i} ({i / len(intermediate_duplicates):.1%})", end = "\r")
 
         similarity = predictor.predict_proba([similarity_scores(pair)])[0][1]
 
@@ -188,7 +196,8 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[
             # print(f"{similarity_scores(pair)} -> {similarity}")
             final_duplicates.add(pair)
 
-    print("Done checking duplicates")
+    if do_print:
+        print("Done checking duplicates")
 
     return final_duplicates
 
@@ -206,21 +215,21 @@ if __name__ == "__main__":
     filename = "data/TVs-all-merged.json"
 
 
-    products, all_duplicates = load_data(filename)
+    products, all_duplicates, num_products = load_data(filename)
 
     print()
 
-    minhash(products)
+    minhash(products, num_hashes)
 
-    intermediate_duplicates = LSH(products)
+    intermediate_duplicates = LSH(products, num_bands, num_rows)
 
     print()
 
-    evaluate(intermediate_duplicates, all_duplicates)
+    evaluate(intermediate_duplicates, all_duplicates, num_products)
 
     print(f"Comparison ratio: {len(intermediate_duplicates) / comb(len(products), 2):.1%}")
     print()
 
-    final_duplicates = duplicate_detection(intermediate_duplicates)
+    final_duplicates = duplicate_detection(intermediate_duplicates, all_duplicates)
 
-    evaluate(final_duplicates, all_duplicates)
+    evaluate(final_duplicates, all_duplicates, num_products)
