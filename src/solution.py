@@ -140,10 +140,21 @@ def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]
         print(f"TN: {TN}")
         print(f"FN: {FN}")
 
-    precision = TP / (TP + FP)
-    recall = TP / (TP + FN)
+    if (TP + FP) != 0:
+        precision = TP / (TP + FP)
+    else:
+        precision = 0
 
-    F1 = 2 * precision * recall / (precision + recall)
+    if (TP + FN) != 0:
+        recall = TP / (TP + FN)
+    else:
+        recall = 0
+
+
+    if precision + recall != 0:
+        F1 = 2 * precision * recall / (precision + recall)
+    else:
+        F1 = 0
 
     if do_print:
         print(f"F1: {F1:.2%}")

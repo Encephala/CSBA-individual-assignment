@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from solution import *
 
-num_hashes = 300
+num_hashes = 420
 
 all_divisors = [i for i in range(1, num_hashes + 1) if num_hashes % i == 0]
 
@@ -34,7 +34,8 @@ for (i, num_rows) in enumerate(all_divisors):
     # Check that num_hashes is divisible by num_rows
     assert num_bands * num_rows == num_hashes
 
-    print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
+    if do_print:
+        print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
 
 
     minhash(products, num_hashes, do_print)
@@ -43,16 +44,25 @@ for (i, num_rows) in enumerate(all_divisors):
 
     precision_star, recall_star, F1_star = evaluate(intermediate_duplicates, all_duplicates, num_products, do_print)
 
-
     comparison_ratio = len(intermediate_duplicates) / comb(len(products), 2)
 
+    if do_print:
+        print(f"Comparison ratio: {comparison_ratio:.1%}")
 
-    final_duplicates = duplicate_detection(intermediate_duplicates, all_duplicates, do_print)
+    # Can't do logit if we have 0 TP
+    if precision_star != 0:
+        final_duplicates = duplicate_detection(intermediate_duplicates, all_duplicates, do_print)
 
-    precision, recall, F1 = evaluate(final_duplicates, all_duplicates, num_products, do_print)
+        precision, recall, F1 = evaluate(final_duplicates, all_duplicates, num_products, do_print)
+
+    else:
+        precision, recall, F1 = 0, 0, 0
 
 
     results[comparison_ratio] = Result(precision_star, recall_star, F1_star, precision, recall, F1)
+
+    if do_print:
+        print()
 
 
 comparison_ratios = [100 * i for i in results.keys()]
