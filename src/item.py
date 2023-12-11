@@ -134,25 +134,25 @@ class Item():
     def find_set_representation(self, max_len: int = 10) -> None:
         result = set()
 
-        for word in self.title.split(" "):
-            result.add(word)
-
-        for val in self.features.values():
-            if len(val) < max_len:
-                result.add(val)
-
-        # regex_words = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
-        # regex_number_unit = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
-
-        # for match in re.finditer(regex_words, self.title):
-        #     result.add(match.group().strip())
+        # for word in self.title.split(" "):
+        #     result.add(word)
 
         # for val in self.features.values():
-        #     for match in re.finditer(regex_number_unit, val):
-        #         result.add(match.group().strip())
+        #     if len(val) < max_len:
+        #         result.add(val)
 
-        #     for match in re.finditer(regex_words, val):
-        #         result.add(match.group().strip())
+        regex_words = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
+        regex_number_unit = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
+
+        for match in re.finditer(regex_words, self.title):
+            result.add(match.group().strip())
+
+        for val in self.features.values():
+            for match in re.finditer(regex_number_unit, val):
+                result.add(match.group().strip())
+
+            # for match in re.finditer(regex_words, val):
+            #     result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -207,7 +207,7 @@ class Item():
 
 
         # Clean up the data, removing components which only appear for a single product
-        # Remove rows from result which only contain a single value
+        # or which occur many times
         rows, _ = result.nonzero()
 
         occurrences = defaultdict(int)
@@ -215,9 +215,12 @@ class Item():
         for row in rows:
             occurrences[row] += 1
 
-        single_occurrences = dict(filter(lambda x: x[1] == 1, occurrences.items()))
+        # single_occurrences = dict(filter(lambda x: x[1] == 1, occurrences.items()))
+        many_occurrences = dict(filter(lambda x: x[1] > 400, occurrences.items()))
 
-        for row in reversed(single_occurrences.keys()):
+        all_filtered_features = {**many_occurrences}
+
+        for row in sorted(list(all_filtered_features.keys()), reverse = True):
             # https://stackoverflow.com/questions/13077527/is-there-a-numpy-delete-equivalent-for-sparse-matrices
             result.rows = np.delete(result.rows, row)
             result.data = np.delete(result.data, row)

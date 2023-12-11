@@ -149,11 +149,6 @@ def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]
 def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[Item]]:
     print("Detecting duplicates")
 
-    # Jaccard score of the sets c1 and c2
-    def jaccard(pair):
-        c1, c2 = [item.set_representation for item in pair]
-        return len(c1.intersection(c2)) / len(c1.union(c2))
-
     def similarity_scores(pair: tuple[Item]):
         item, other_item = pair
 
@@ -180,7 +175,7 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[
     )
 
     print("Done fitting logit model")
-    print(f"Coefficients: {predictor.coef_}")
+    print(f"Coefficients: {predictor.intercept_} {predictor.coef_}")
 
 
     final_duplicates: set[tuple[Item]] = set()
@@ -200,7 +195,7 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]]) -> set[tuple[
 
 if __name__ == "__main__":
     # Parameters
-    num_hashes = 300
+    num_hashes = 420
     num_rows = 3
     num_bands = num_hashes // num_rows
     # Check that num_hashes is divisible by num_rows
