@@ -221,7 +221,7 @@ if __name__ == "__main__":
     # Check that num_hashes is divisible by num_rows
     assert num_bands * num_rows == num_hashes
 
-    print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
+    print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.4f}")
 
     filename = "data/TVs-all-merged.json"
 

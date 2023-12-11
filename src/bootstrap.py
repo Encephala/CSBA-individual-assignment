@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from solution import *
 
-num_hashes = 420
+num_hashes = 720
 
 all_divisors = [i for i in range(1, num_hashes + 1) if num_hashes % i == 0]
 
@@ -35,7 +35,7 @@ for (i, num_rows) in enumerate(all_divisors):
     assert num_bands * num_rows == num_hashes
 
     if do_print:
-        print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.2f}")
+        print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.4f}")
 
 
     minhash(products, num_hashes, do_print)
@@ -69,7 +69,7 @@ comparison_ratios = [100 * i for i in results.keys()]
 
 plt.figure()
 plt.title("Performance LSH")
-plt.xlabel("Comparison ratio (%)")
+plt.xlabel("Fraction of comparisons (%)")
 plt.ylabel("Performance (%)")
 plt.plot(comparison_ratios, [result.precision_star * 100 for result in results.values()], label = "Precision*")
 plt.plot(comparison_ratios, [result.recall_star * 100 for result in results.values()], label = "Recall*")
@@ -80,7 +80,7 @@ plt.savefig("images/performance_LSH.svg")
 
 plt.figure()
 plt.title("Performance final")
-plt.xlabel("Comparison ratio (%)")
+plt.xlabel("Fraction of comparisons (%)")
 plt.ylabel("Performance (%)")
 plt.plot(comparison_ratios, [result.precision * 100 for result in results.values()], label = "Precision")
 plt.plot(comparison_ratios, [result.recall * 100 for result in results.values()], label = "Recall")
