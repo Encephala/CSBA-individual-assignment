@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import matplotlib.pyplot as plt
+
 from dataclasses import dataclass
 from solution import *
 
@@ -25,7 +27,7 @@ do_print = True
 
 results: dict[float, Result] = {}
 
-for (i, num_rows) in enumerate(all_divisors[:5]):
+for (i, num_rows) in enumerate(all_divisors):
     print(f"{i + 1} / {len(all_divisors) + 1}: {num_rows} rows")
 
     num_bands = num_hashes // num_rows
@@ -52,4 +54,29 @@ for (i, num_rows) in enumerate(all_divisors[:5]):
 
     results[comparison_ratio] = Result(precision_star, recall_star, F1_star, precision, recall, F1)
 
-print(results)
+
+comparison_ratios = [100 * i for i in results.keys()]
+
+plt.figure()
+plt.title("Performance LSH")
+plt.xlabel("Comparison ratio (%)")
+plt.ylabel("Performance (%)")
+plt.plot(comparison_ratios, [result.precision_star * 100 for result in results.values()], label = "Precision*")
+plt.plot(comparison_ratios, [result.recall_star * 100 for result in results.values()], label = "Recall*")
+plt.plot(comparison_ratios, [result.F1_star * 100 for result in results.values()], label = "F1*")
+plt.legend()
+plt.savefig("images/performance_LSH.png")
+plt.savefig("images/performance_LSH.svg")
+
+plt.figure()
+plt.title("Performance final")
+plt.xlabel("Comparison ratio (%)")
+plt.ylabel("Performance (%)")
+plt.plot(comparison_ratios, [result.precision * 100 for result in results.values()], label = "Precision")
+plt.plot(comparison_ratios, [result.recall * 100 for result in results.values()], label = "Recall")
+plt.plot(comparison_ratios, [result.F1 * 100 for result in results.values()], label = "F1")
+plt.legend()
+plt.savefig("images/performance_final.png")
+plt.savefig("images/performance_final.svg")
+
+plt.show()

@@ -11,7 +11,7 @@ I did this assignment individually.
 ## ToDo
 - Train logit model on data and fix parameters rather than fitting each run
     - Can I adjust parameters for unbalancedness of training data? Doesn't really matter I guess
-- Tune some of the parameters (shingle size, num_hash)
+- Tune some of the parameters (logit parameters & threshold)
 - Implement bootstrapping
 
 #### Maybe
