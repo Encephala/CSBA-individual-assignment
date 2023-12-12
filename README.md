@@ -1,5 +1,7 @@
 # CSBA-individual-assignment
 
+[![Validate CFF](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml/badge.svg)](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml)
+
 This is my solution to the individual assignment of the Computer Science for Business Analytics course (EUR).
 
 The problem is to detect duplicates in a large set (1624) of product descriptions of TVs from the web.
@@ -9,17 +11,13 @@ so as to reduce the cost of the subsequent duplicate detection through logistic 
 I did this assignment individually.
 
 ## ToDo
-- Train logit model on data and fix parameters rather than fitting each run
-    - Can I adjust parameters for unbalancedness of training data? Doesn't really matter I guess
-- Tune some of the parameters (logit parameters & threshold)
-- Implement bootstrapping
-
-#### Maybe
-- Fix `Item` to be more consistent about return/setting own parameters
+- Tune logit threshold
+- Implement some way to aggregate results across bootstraps
 
 ## Questions:
 -
 
 ## Notes
 - Filtering #occurrences of components <= 2 rather than == 1 yields worse results, too much loss of info
+- Intercept may have to be adjusted for the unbalancedness of the data
 
