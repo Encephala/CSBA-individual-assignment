@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+
+message: "Please cite as below"
+
+authors:
+  - family-names: Rietveld
+    given-names: Jonathan
+
+title: "LSH-based Pre-Selection for Duplicate Detection in Online Products through Logistic Regression"
+date-released: 2023-12-15
