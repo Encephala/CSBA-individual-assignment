@@ -62,7 +62,7 @@ for bootstrap in range(num_bootstraps):
 
 
         # Fit model on train data
-        minhash(bootstrap_train, num_hashes, do_print)
+        minhash(bootstrap_train, num_hashes, do_print = do_print)
 
         intermediate_duplicates = LSH(bootstrap_train, num_bands, num_rows)
 
@@ -71,7 +71,7 @@ for bootstrap in range(num_bootstraps):
         if do_print:
             print(f"Comparison ratio: {comparison_ratio:.1%}")
 
-        precision_star, recall_star, F1_star = evaluate(intermediate_duplicates, all_duplicates, num_products_train, do_print)
+        precision_star, recall_star, F1_star = evaluate(intermediate_duplicates, all_duplicates, num_products_train, do_print = do_print)
 
         # Can't do logit if we have 0 TP in training data
         if precision_star != 0:
@@ -83,20 +83,20 @@ for bootstrap in range(num_bootstraps):
 
 
         # Apply model to testing data
-        minhash(bootstrap_test, num_hashes, do_print)
+        minhash(bootstrap_test, num_hashes, do_print = do_print)
 
         intermediate_duplicates = LSH(bootstrap_test, num_bands, num_rows)
 
-        precision_star, recall_star, F1_star = evaluate(intermediate_duplicates, all_duplicates, num_products_test, do_print)
+        precision_star, recall_star, F1_star = evaluate(intermediate_duplicates, all_duplicates, num_products_test, do_print = do_print)
 
         comparison_ratio = len(intermediate_duplicates) / comb(len(bootstrap_test), 2)
 
         if do_print:
             print(f"Comparison ratio: {comparison_ratio:.1%}")
 
-        final_duplicates, _ = duplicate_detection(intermediate_duplicates, all_duplicates, predictor, do_print)
+        final_duplicates, _ = duplicate_detection(intermediate_duplicates, all_duplicates, predictor = predictor, do_print = do_print)
 
-        precision, recall, F1 = evaluate(final_duplicates, all_duplicates, num_products_test, do_print)
+        precision, recall, F1 = evaluate(final_duplicates, all_duplicates, num_products_test, do_print = do_print)
 
 
         results[bootstrap][comparison_ratio] = Result(precision_star, recall_star, F1_star, precision, recall, F1)

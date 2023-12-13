@@ -180,7 +180,8 @@ def similarity_scores(pair: tuple[Item]) -> list[int]:
 
     return [similarity_SM, similarity_JW]
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item]], LogisticRegression]:
+def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], threshold: float = 0.09,
+                        predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item]], LogisticRegression]:
     if do_print:
         print("Detecting duplicates")
 
@@ -203,7 +204,7 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicate
 
         similarity = predictor.predict_proba([similarity_scores(pair)])[0][1]
 
-        if similarity > 0.05:
+        if similarity > threshold:
             # print(f"{similarity_scores(pair)} -> {similarity}")
             final_duplicates.add(pair)
 
@@ -215,8 +216,8 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicate
 
 if __name__ == "__main__":
     # Parameters
-    num_hashes = 420
-    num_rows = 3
+    num_hashes = 720
+    num_rows = 4
     num_bands = num_hashes // num_rows
     # Check that num_hashes is divisible by num_rows
     assert num_bands * num_rows == num_hashes
