@@ -1,6 +1,6 @@
 # CSBA-individual-assignment
 
-[![Validate CFF](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml/badge.svg)](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml)
+[![CFF valid](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml/badge.svg)](https://github.com/Encephala/CSBA-individual-assignment/actions/workflows/validate_cff.yaml)
 
 This is my solution to the individual assignment of the Computer Science for Business Analytics course (EUR).
 
