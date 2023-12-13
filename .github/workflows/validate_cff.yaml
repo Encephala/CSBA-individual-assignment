@@ -15,4 +15,6 @@ jobs:
     
       - name: cff-validator
         uses: dieghernan/cff-validator@v3
+        with:
+          install-r: true
 
