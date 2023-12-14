@@ -180,7 +180,7 @@ def similarity_scores(pair: tuple[Item, Item]) -> list[int]:
 
     return [similarity_SM, similarity_JW]
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item, Item]], all_duplicates: set[tuple[Item, Item]], weight: float = 1, threshold: float = 0.05,
+def duplicate_detection(intermediate_duplicates: set[tuple[Item, Item]], all_duplicates: set[tuple[Item, Item]], weight: float = 1, threshold: float = 0.06,
                         predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item, Item]], LogisticRegression]:
     if do_print:
         print("Detecting duplicates")

@@ -8,20 +8,19 @@ from datetime import datetime
 from solution import *
 
 num_hashes = 432
-weight = 0.85
+weight = 1.0
 
 # Drop highest divisors, as they all yield 0 TP after LSH anyways
 all_divisors = [i for i in range(1, num_hashes + 1) if num_hashes % i == 0][:8]
-all_divisors = [1]
 print(f"Testing for num_rows in {all_divisors}")
 
 
 filename = "data/TVs-all-merged.json"
 products, all_duplicates, num_products = load_data(filename)
 
-do_print = True
+do_print = False
 
-num_bootstraps = 1
+num_bootstraps = 5
 
 # results[:, :, i] is:
 # i = 0 - comparison ratio
