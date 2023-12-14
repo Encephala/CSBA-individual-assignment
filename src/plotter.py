@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-specifier = "2023-12-14 14:29:45.986509-[1, 2, 3, 4, 6, 8, 9, 12]"
+specifier = "2023-12-14 16:53:28.989082-[1, 2, 3, 4, 6, 8, 9, 12]"
 results = np.load(f"data/bootstrap {specifier}.npy")
 
 # Average results across bootstraps
