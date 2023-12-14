@@ -8,7 +8,7 @@ from datetime import datetime
 from solution import *
 
 num_hashes = 432
-weight = 0.8
+weight = 0.85
 
 # Drop highest divisors, as they all yield 0 TP after LSH anyways
 all_divisors = [i for i in range(1, num_hashes + 1) if num_hashes % i == 0][:8]
@@ -20,7 +20,7 @@ products, all_duplicates, num_products = load_data(filename)
 
 do_print = False
 
-num_bootstraps = 3
+num_bootstraps = 5
 
 # results[:, :, i] is:
 # i = 0 - comparison ratio
@@ -131,36 +131,38 @@ for bootstrap in range(num_bootstraps):
 
 np.save(f"data/bootstrap {datetime.now()}-{all_divisors}.npy", results)
 
-# Average results across bootstraps
-comparison_ratio = np.mean(results[:, :, 0], axis = 0)
-precision_star = np.mean(results[:, :, 1], axis = 0)
-recall_star = np.mean(results[:, :, 2], axis = 0)
-F1_star = np.mean(results[:, :, 3], axis = 0)
-precision = np.mean(results[:, :, 4], axis = 0)
-recall = np.mean(results[:, :, 5], axis = 0)
-F1 = np.mean(results[:, :, 6], axis = 0)
+# Commented out since plotter.py is now used instead
+
+# # Average results across bootstraps
+# comparison_ratio = np.mean(results[:, :, 0], axis = 0)
+# precision_star = np.mean(results[:, :, 1], axis = 0)
+# recall_star = np.mean(results[:, :, 2], axis = 0)
+# F1_star = np.mean(results[:, :, 3], axis = 0)
+# precision = np.mean(results[:, :, 4], axis = 0)
+# recall = np.mean(results[:, :, 5], axis = 0)
+# F1 = np.mean(results[:, :, 6], axis = 0)
 
 
-plt.figure()
-plt.title(f"Performance LSH {weight=}")
-plt.xlabel("Fraction of comparisons (%)")
-plt.ylabel("Performance (%)")
-plt.plot(comparison_ratio * 100, precision_star * 100, ".-", label = "Precision*")
-plt.plot(comparison_ratio * 100, recall_star * 100, ".-", label = "Recall*")
-plt.plot(comparison_ratio * 100, F1_star * 100, ".-", label = "F1*")
-plt.legend()
-plt.savefig(f"images/performance_LSH {datetime.now()}.png")
-plt.savefig(f"images/performance_LSH {datetime.now()}.svg")
+# plt.figure()
+# plt.title(f"Performance LSH {weight=}")
+# plt.xlabel("Fraction of comparisons (%)")
+# plt.ylabel("Performance (%)")
+# plt.plot(comparison_ratio * 100, precision_star * 100, ".-", label = "Precision*")
+# plt.plot(comparison_ratio * 100, recall_star * 100, ".-", label = "Recall*")
+# plt.plot(comparison_ratio * 100, F1_star * 100, ".-", label = "F1*")
+# plt.legend()
+# plt.savefig(f"images/performance_LSH {datetime.now()}.png")
+# plt.savefig(f"images/performance_LSH {datetime.now()}.svg")
 
-plt.figure()
-plt.title(f"Performance final {weight=}")
-plt.xlabel("Fraction of comparisons (%)")
-plt.ylabel("Performance (%)")
-plt.plot(comparison_ratio * 100, precision * 100, ".-", label = "Precision*")
-plt.plot(comparison_ratio * 100, recall * 100, ".-", label = "Recall*")
-plt.plot(comparison_ratio * 100, F1 * 100, ".-", label = "F1*")
-plt.legend()
-plt.savefig(f"images/performance_final {datetime.now()}.png")
-plt.savefig(f"images/performance_final {datetime.now()}.svg")
+# plt.figure()
+# plt.title(f"Performance final {weight=}")
+# plt.xlabel("Fraction of comparisons (%)")
+# plt.ylabel("Performance (%)")
+# plt.plot(comparison_ratio * 100, precision * 100, ".-", label = "Precision*")
+# plt.plot(comparison_ratio * 100, recall * 100, ".-", label = "Recall*")
+# plt.plot(comparison_ratio * 100, F1 * 100, ".-", label = "F1*")
+# plt.legend()
+# plt.savefig(f"images/performance_final {datetime.now()}.png")
+# plt.savefig(f"images/performance_final {datetime.now()}.svg")
 
-plt.show()
+# plt.show()
