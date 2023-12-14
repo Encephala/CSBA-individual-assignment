@@ -20,4 +20,5 @@ I did this assignment individually.
 ## Notes
 - Filtering #occurrences of components <= 2 rather than == 1 yields worse results, too much loss of info
 - Intercept may have to be adjusted for the unbalancedness of the data
+    - Instead, use weight 0.85
 

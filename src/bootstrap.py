@@ -49,14 +49,14 @@ for bootstrap in range(num_bootstraps):
     all_duplicates_train: set[tuple[Item, Item]] = set()
     all_duplicates_test: set[tuple[Item, Item]] = set()
 
-    for product in bootstrap_train:
-        for other_product in bootstrap_train:
-            if (product, other_product) in all_duplicates:
+    for i, product in enumerate(bootstrap_train):
+        for other_product in bootstrap_train[i + 1:]:
+            if (product, other_product) in all_duplicates or (other_product, product) in all_duplicates:
                 all_duplicates_train.add((product, other_product))
 
-    for product in bootstrap_test:
-        for other_product in bootstrap_test:
-            if (product, other_product) in all_duplicates:
+    for i, product in enumerate(bootstrap_test):
+        for other_product in bootstrap_test[i + 1:]:
+            if (product, other_product) in all_duplicates or (other_product, product) in all_duplicates:
                 all_duplicates_test.add((product, other_product))
 
     num_products_train = len(bootstrap_train)
@@ -64,7 +64,6 @@ for bootstrap in range(num_bootstraps):
 
     print(f"Train: {num_products_train}, test: {num_products_test}")
     print(f"All duplicates train: {len(all_duplicates_train)}, all duplicates test: {len(all_duplicates_test)}", end = "\n\n")
-
 
     for (divisor_index, num_rows) in enumerate(all_divisors):
         print(f"{divisor_index + 1} / {len(all_divisors)}: {num_rows} rows")
@@ -80,9 +79,9 @@ for bootstrap in range(num_bootstraps):
             print()
             print("Train data")
 
-        minhash(bootstrap_train, num_hashes, do_print = do_print)
+        signatures_train = minhash(bootstrap_train, num_hashes, do_print = do_print)
 
-        intermediate_duplicates_train = LSH(bootstrap_train, num_bands, num_rows)
+        intermediate_duplicates_train = LSH(bootstrap_train, signatures_train, num_bands, num_rows)
 
         comparison_ratio_train = len(intermediate_duplicates_train) / comb(len(bootstrap_train), 2)
 
@@ -105,9 +104,9 @@ for bootstrap in range(num_bootstraps):
             print()
             print("Test data")
 
-        minhash(bootstrap_test, num_hashes, do_print = do_print)
+        signatures_test = minhash(bootstrap_test, num_hashes, do_print = do_print)
 
-        intermediate_duplicates_test = LSH(bootstrap_test, num_bands, num_rows)
+        intermediate_duplicates_test = LSH(bootstrap_test, signatures_test, num_bands, num_rows)
 
         precision_star, recall_star, F1_star = evaluate(intermediate_duplicates_test, all_duplicates_test, num_products_test, do_print = do_print)
 

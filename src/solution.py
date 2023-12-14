@@ -50,9 +50,8 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
     # Get all item instances into big array
     products = []
 
-    # Dict which contains modelID -> list of products with that modelID,
-    # only for products of which duplicates exist
-    duplicates: dict[str, list] = {}
+    # Dict which contains modelID -> list of products with that modelID
+    duplicates: defaultdict[str, list] = defaultdict(list)
 
     for key, val in data.items():
         for product in val:
@@ -65,10 +64,7 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
 
             products.append(product_as_item)
 
-            if model_id not in duplicates:
-                duplicates[model_id] = [product_as_item]
-            else:
-                duplicates[model_id].append(product_as_item)
+            duplicates[model_id].append(product_as_item)
 
     # Get set of all duplicates
     all_duplicates: set[tuple[Item]] = set()
@@ -84,7 +80,7 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
     return products, all_duplicates, len(products)
 
 
-def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> np.ndarray:
+def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> list[Signature]:
     binary_data = Item.minhash(products, do_print)
 
     if do_print:
@@ -94,18 +90,21 @@ def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> np.
     if do_print:
         print("Done calculating signatures")
 
-    for i, signature in enumerate(signatures.T):
-        products[i].signature = Signature(signature)
+    result = []
+    for signature in signatures.T:
+        result.append(Signature(signature))
+
+    return result
 
 
 
-def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item, Item]]:
-    buckets: dict[int, list[Item]] = defaultdict(list)
+def LSH(products: list[Item], signatures: list[Signature], num_bands: int, num_rows: int) -> set[tuple[Item, Item]]:
+    buckets: defaultdict[int, list[Item]] = defaultdict(list)
 
-    for product in products:
-        hashes = product.signature.hashes(num_bands, num_rows)
+    for i, signature in enumerate(signatures):
+        hashes = signature.hashes(num_bands, num_rows)
         for subvector_hash in hashes:
-            buckets[subvector_hash].append(product)
+            buckets[subvector_hash].append(products[i])
 
     # Aggregate buckets
     result: set[tuple[Item, Item]] = set()
@@ -230,9 +229,9 @@ if __name__ == "__main__":
 
     print()
 
-    minhash(products, num_hashes)
+    signatures = minhash(products, num_hashes)
 
-    intermediate_duplicates = LSH(products, num_bands, num_rows)
+    intermediate_duplicates = LSH(products, signatures, num_bands, num_rows)
 
     print()
 

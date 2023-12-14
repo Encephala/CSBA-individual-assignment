@@ -43,8 +43,6 @@ class Item():
                         replace_all(title, ['"', " inch", "-inch", "inches", "Inch", "-Inch", " Inch"], "inch"),
                         ["hertz", "hz", " hz", "Hertz", "Hz", "Hz"], "hz").lower().strip()
 
-        self.signature: Signature = None
-
         self.features = {
             key.lower().replace(":", ""):
                 replace_all(
@@ -60,13 +58,13 @@ class Item():
         self.brand = self.get_brand()
 
     def __str__(self) -> str:
-        return f"Item: '{self.id}'"
+        return f"Item: '{self.id}' ('{self.shop}')"
 
     def __repr__(self) -> str:
         return self.__str__()
 
     def __hash__(self) -> int:
-        return hash(self.title) + hash(self.shop)
+        return hash(self.title) + hash(self.shop) + hash(self.id)
 
     def __eq__(self, other) -> bool:
         return self.id == other.id
