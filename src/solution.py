@@ -3,6 +3,7 @@
 # Imports
 import json
 import warnings
+import itertools
 
 from itertools import combinations
 from math import comb
@@ -180,21 +181,20 @@ def similarity_scores(pair: tuple[Item]) -> list[int]:
 
     return [similarity_SM, similarity_JW]
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], threshold: float = 0.09,
+def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], weight: float = 1, threshold: float = 0.05,
                         predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item]], LogisticRegression]:
     if do_print:
         print("Detecting duplicates")
 
     # Use provided predictor, otherwise fit model
     if not predictor:
-        predictor = LogisticRegression().fit(
+        predictor = LogisticRegression(class_weight = {0: weight, 1: 1}).fit(
             [similarity_scores(pair) for pair in intermediate_duplicates],
             [pair in all_duplicates for pair in intermediate_duplicates]
         )
 
     if do_print:
-        print("Done fitting logit model")
-        print(f"Coefficients: {predictor.intercept_} {predictor.coef_}")
+        print(f"Logit model coefficients: {predictor.intercept_} {predictor.coef_}")
 
 
     final_duplicates: set[tuple[Item]] = set()
@@ -205,7 +205,6 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicate
         similarity = predictor.predict_proba([similarity_scores(pair)])[0][1]
 
         if similarity > threshold:
-            # print(f"{similarity_scores(pair)} -> {similarity}")
             final_duplicates.add(pair)
 
     if do_print:
