@@ -8,16 +8,6 @@ The problem is to detect duplicates in a large set (1624) of product description
 This is done through preselection, applying locality-sensitive hashing to the data in order to find candidate duplicates,
 so as to reduce the cost of the subsequent duplicate detection through logistic regression with various similarity metrics as predictors.
 
+A final F1 score of 27% is achieved when filtering out 85% of the potential duplicates with LSH. Further explanation can be found in the accompanying paper, `Paper.pdf`.
+
 I did this assignment individually.
-
-## ToDo
-- Tune logit threshold
-- Implement some way to aggregate results across bootstraps
-
-## Questions:
--
-
-## Notes
-- Filtering #occurrences of components <= 2 rather than == 1 yields worse results, too much loss of info
-- Intercept may have to be adjusted for the unbalancedness of the data
-
