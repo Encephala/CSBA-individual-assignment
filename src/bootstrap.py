@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import matplotlib.pyplot as plt
-
 from random import choice
 from datetime import datetime
+
+import numpy as np
 
 from solution import *
 
@@ -127,39 +127,3 @@ for bootstrap in range(num_bootstraps):
     print()
 
 np.save(f"data/bootstrap {datetime.now()}-{all_divisors}.npy", results)
-
-# Commented out since plotter.py is now used instead
-
-# # Average results across bootstraps
-# comparison_ratio = np.mean(results[:, :, 0], axis = 0)
-# precision_star = np.mean(results[:, :, 1], axis = 0)
-# recall_star = np.mean(results[:, :, 2], axis = 0)
-# F1_star = np.mean(results[:, :, 3], axis = 0)
-# precision = np.mean(results[:, :, 4], axis = 0)
-# recall = np.mean(results[:, :, 5], axis = 0)
-# F1 = np.mean(results[:, :, 6], axis = 0)
-
-
-# plt.figure()
-# plt.title(f"Performance LSH {weight=}")
-# plt.xlabel("Fraction of comparisons (%)")
-# plt.ylabel("Performance (%)")
-# plt.plot(comparison_ratio * 100, precision_star * 100, ".-", label = "Precision*")
-# plt.plot(comparison_ratio * 100, recall_star * 100, ".-", label = "Recall*")
-# plt.plot(comparison_ratio * 100, F1_star * 100, ".-", label = "F1*")
-# plt.legend()
-# plt.savefig(f"images/performance_LSH {datetime.now()}.png")
-# plt.savefig(f"images/performance_LSH {datetime.now()}.svg")
-
-# plt.figure()
-# plt.title(f"Performance final {weight=}")
-# plt.xlabel("Fraction of comparisons (%)")
-# plt.ylabel("Performance (%)")
-# plt.plot(comparison_ratio * 100, precision * 100, ".-", label = "Precision*")
-# plt.plot(comparison_ratio * 100, recall * 100, ".-", label = "Recall*")
-# plt.plot(comparison_ratio * 100, F1 * 100, ".-", label = "F1*")
-# plt.legend()
-# plt.savefig(f"images/performance_final {datetime.now()}.png")
-# plt.savefig(f"images/performance_final {datetime.now()}.svg")
-
-# plt.show()

@@ -132,13 +132,6 @@ class Item():
     def find_set_representation(self, max_len: int = 10) -> None:
         result = set()
 
-        # for word in self.title.split(" "):
-        #     result.add(word)
-
-        # for val in self.features.values():
-        #     if len(val) < max_len:
-        #         result.add(val)
-
         regex_words = r"([a-zA-Z0-9]*(([0-9]+[^0-9, ]+)|([^0-9, ]+[0-9]+))[a-zA-Z0-9]*)"
         regex_number_unit = r"(\d+(\.\d+)?[a-zA-Z]+|^\d+(\.\d+)?)"
 
@@ -149,8 +142,6 @@ class Item():
             for match in re.finditer(regex_number_unit, val):
                 result.add(match.group().strip())
 
-            # for match in re.finditer(regex_words, val):
-            #     result.add(match.group().strip())
 
         if self.weight_quantile is not None:
             result.add(f"Weight {self.weight_quantile}")
@@ -185,7 +176,7 @@ class Item():
 
 
     @staticmethod
-    def minhash(products: list[Item], do_print = True) -> lil_matrix:
+    def minhash(products: list[Item], filter_num: int, do_print = True) -> lil_matrix:
         representations = [product.set_representation for product in products]
 
         # Set to ensure uniqueness
@@ -215,8 +206,7 @@ class Item():
         for row in rows:
             occurrences[row] += 1
 
-        # single_occurrences = dict(filter(lambda x: x[1] == 1, occurrences.items()))
-        many_occurrences = dict(filter(lambda x: x[1] > 400, occurrences.items()))
+        many_occurrences = dict(filter(lambda x: x[1] > filter_num, occurrences.items()))
 
         all_filtered_features = {**many_occurrences}
 

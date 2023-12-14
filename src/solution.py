@@ -3,16 +3,15 @@
 # Imports
 import json
 import warnings
-import itertools
 
 from itertools import combinations
 from math import comb
 from difflib import SequenceMatcher
 from collections import defaultdict
-from sklearn.linear_model import LogisticRegression
 
-import numpy as np
 import jellyfish
+
+from sklearn.linear_model import LogisticRegression
 
 from item import Item, Signature
 
@@ -80,8 +79,8 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
     return products, all_duplicates, len(products)
 
 
-def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> list[Signature]:
-    binary_data = Item.minhash(products, do_print)
+def minhash(products: list[Item], num_hashes: int, filter_num: int = 500, do_print: bool = True) -> list[Signature]:
+    binary_data = Item.minhash(products, filter_num, do_print)
 
     if do_print:
         print("Calculating signatures")
@@ -215,7 +214,7 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item, Item]], all_dup
 if __name__ == "__main__":
     # Parameters
     num_hashes = 432
-    num_rows = 1
+    num_rows = 4
     num_bands = num_hashes // num_rows
     # Check that num_hashes is divisible by num_rows
     assert num_bands * num_rows == num_hashes
