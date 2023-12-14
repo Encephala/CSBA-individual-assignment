@@ -240,7 +240,7 @@ class Item():
 
 
     @staticmethod
-    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int, do_print = True) -> np.ndarray:
+    def binary_to_signatures(binary_data: lil_matrix, num_hashes: int, do_print: bool = True) -> np.ndarray:
         result = np.full([num_hashes, binary_data.shape[1]], float("inf"))
 
         # https://stackoverflow.com/questions/4319014/iterating-through-a-scipy-sparse-vector-or-matrix

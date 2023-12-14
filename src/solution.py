@@ -52,7 +52,7 @@ def load_data(filename: str) -> tuple[list[Item], set[tuple[Item]],  int]:
 
     # Dict which contains modelID -> list of products with that modelID,
     # only for products of which duplicates exist
-    duplicates = {}
+    duplicates: dict[str, list] = {}
 
     for key, val in data.items():
         for product in val:
@@ -99,7 +99,7 @@ def minhash(products: list[Item], num_hashes: int, do_print: bool = True) -> np.
 
 
 
-def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item]]:
+def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item, Item]]:
     buckets: dict[int, list[Item]] = defaultdict(list)
 
     for product in products:
@@ -108,7 +108,7 @@ def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item]]
             buckets[subvector_hash].append(product)
 
     # Aggregate buckets
-    result: set[tuple[Item]] = set()
+    result: set[tuple[Item, Item]] = set()
     for _, bucket in buckets.items():
         for item, other_item in combinations(bucket, 2):
             result.add((item, other_item))
@@ -116,7 +116,7 @@ def LSH(products: list[Item], num_bands: int, num_rows: int) -> set[tuple[Item]]
     return result
 
 
-def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], num_products: int, do_print: bool = True) -> list[float]:
+def evaluate(found_duplicates: set[tuple[Item, Item]], all_duplicates: set[tuple[Item, Item]], num_products: int, do_print: bool = True) -> list[float]:
     # F1-score
     FP = FN = TP = TN = 0
 
@@ -163,7 +163,7 @@ def evaluate(found_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]
     return precision, recall, F1
 
 
-def similarity_scores(pair: tuple[Item]) -> list[int]:
+def similarity_scores(pair: tuple[Item, Item]) -> list[int]:
     item, other_item = pair
 
     if item.shop == other_item.shop:
@@ -181,8 +181,8 @@ def similarity_scores(pair: tuple[Item]) -> list[int]:
 
     return [similarity_SM, similarity_JW]
 
-def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicates: set[tuple[Item]], weight: float = 1, threshold: float = 0.05,
-                        predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item]], LogisticRegression]:
+def duplicate_detection(intermediate_duplicates: set[tuple[Item, Item]], all_duplicates: set[tuple[Item, Item]], weight: float = 1, threshold: float = 0.05,
+                        predictor: LogisticRegression = None, do_print: bool = True) -> tuple[set[tuple[Item, Item]], LogisticRegression]:
     if do_print:
         print("Detecting duplicates")
 
@@ -215,8 +215,8 @@ def duplicate_detection(intermediate_duplicates: set[tuple[Item]], all_duplicate
 
 if __name__ == "__main__":
     # Parameters
-    num_hashes = 720
-    num_rows = 4
+    num_hashes = 432
+    num_rows = 1
     num_bands = num_hashes // num_rows
     # Check that num_hashes is divisible by num_rows
     assert num_bands * num_rows == num_hashes

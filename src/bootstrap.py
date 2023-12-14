@@ -12,15 +12,16 @@ weight = 0.85
 
 # Drop highest divisors, as they all yield 0 TP after LSH anyways
 all_divisors = [i for i in range(1, num_hashes + 1) if num_hashes % i == 0][:8]
+all_divisors = [1]
 print(f"Testing for num_rows in {all_divisors}")
 
 
 filename = "data/TVs-all-merged.json"
 products, all_duplicates, num_products = load_data(filename)
 
-do_print = False
+do_print = True
 
-num_bootstraps = 5
+num_bootstraps = 1
 
 # results[:, :, i] is:
 # i = 0 - comparison ratio
@@ -36,17 +37,17 @@ results = np.empty([num_bootstraps, len(all_divisors), 7])
 for bootstrap in range(num_bootstraps):
     print(f"Bootstrap {bootstrap + 1} / {num_bootstraps}")
 
-    bootstrap_train = set()
+    bootstrap_train: set[Item] = set()
 
     for _ in range(len(products)):
         bootstrap_train.add(choice(tuple(products)))
 
 
-    bootstrap_test = list(set(products) - bootstrap_train)
-    bootstrap_train = list(bootstrap_train)
+    bootstrap_test: list[Item] = list(set(products) - bootstrap_train)
+    bootstrap_train: list[Item] = list(bootstrap_train)
 
-    all_duplicates_train = set()
-    all_duplicates_test = set()
+    all_duplicates_train: set[tuple[Item, Item]] = set()
+    all_duplicates_test: set[tuple[Item, Item]] = set()
 
     for product in bootstrap_train:
         for other_product in bootstrap_train:
@@ -69,8 +70,6 @@ for bootstrap in range(num_bootstraps):
         print(f"{divisor_index + 1} / {len(all_divisors)}: {num_rows} rows")
 
         num_bands = num_hashes // num_rows
-        # Check that num_hashes is divisible by num_rows
-        assert num_bands * num_rows == num_hashes
 
         if do_print:
             print(f"(Approximate) LSH Acceptance threshold: {(1 / num_bands) ** (1 / num_rows):.4f}")
